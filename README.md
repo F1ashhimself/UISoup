@@ -1,4 +1,4 @@
 UISoup
 ======
 
-Cross Platform GUI Test Automation tool.
+This library supports UI-related testing using Python.
