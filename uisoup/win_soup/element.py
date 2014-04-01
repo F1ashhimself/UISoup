@@ -582,8 +582,10 @@ class WinElement(IElement):
         """
 
         lst_queue = list(self)
+
         if self.acc_parent and self.acc_parent.acc_c_name == 'clntDesktop':
             lst_queue.extend(self._find_windows_by_same_proc())
+
         while lst_queue:
             obj_element = lst_queue.pop(0)
             self._cache.add(obj_element)
