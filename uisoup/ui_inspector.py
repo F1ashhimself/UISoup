@@ -64,6 +64,7 @@ class UIInspector(object):
 
             except:
                 dict_info[attr] = None
+
         return '\n'.join('%s:\t%r' % (attr, dict_info[attr]) for
                          attr in lst_attribute_name_list)
 
@@ -80,7 +81,7 @@ def main():
     """
 
     try:
-        x_old, y_old = uisoup.mouse.get_position()
+        x_old, y_old = None, None
         while True:
             x, y = uisoup.mouse.get_position()
             if (x, y) != (x_old, y_old):

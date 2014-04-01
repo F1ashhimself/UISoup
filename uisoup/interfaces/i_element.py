@@ -27,53 +27,62 @@ class IElement(object):
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def __init__(self, i_accessible, i_object_id):
+    def __init__(self, obj_handle, i_object_id):
         """
         Constructor
 
         Arguments:
-            - i_accessible: instance of object.
+            - obj_handle: instance of i_accessible or window handle.
             - i_object_id: int, object id.
         """
 
     @abstractmethod
-    def click(self):
+    def click(self, x_offset=None, y_offset=None):
         """
         Clicks by left mouse button on this object.
 
         Arguments:
-            - None
+            - x_offset: int, x offset, if not defined half of element width
+            will be used.
+            - y_offset: int, y offset, if not defined half of element height
+            will be used.
 
         Returns:
             - None
         """
 
     @abstractmethod
-    def right_click(self):
+    def right_click(self, x_offset=None, y_offset=None):
         """
         Clicks by right mouse button on this object.
 
         Arguments:
-            - None
+            - x_offset: int, x offset, if not defined half of element width
+            will be used.
+            - y_offset: int, y offset, if not defined half of element height
+            will be used.
 
         Returns:
             - None
         """
 
     @abstractmethod
-    def double_click(self):
+    def double_click(self, x_offset=None, y_offset=None):
         """
         Double clicks by left mouse button on this object.
 
         Arguments:
-            - None
+            - x_offset: int, x offset, if not defined half of element width
+            will be used.
+            - y_offset: int, y offset, if not defined half of element height
+            will be used.
 
         Returns:
             - None
         """
 
     @abstractmethod
-    def drag_to(self, x, y, x_offset=None, y_offset=None):
+    def drag_to(self, x, y, x_offset=None, y_offset=None, smooth=True):
         """
         Drags this object to coordinates.
 
@@ -84,6 +93,7 @@ class IElement(object):
             will be used.
             - y_offset: int, y offset, if not defined half of element height
             will be used.
+            - smooth: bool, indicates is it needed to simulate smooth movement.
 
         Returns:
             - None
@@ -99,6 +109,18 @@ class IElement(object):
 
         Returns:
             - bool that describes state.
+        """
+
+    @abstractproperty
+    def hwnd(self):
+        """
+        Indicates window handle.
+        """
+
+    @abstractproperty
+    def proc_id(self):
+        """
+        Indicates process id.
         """
 
     @abstractproperty
@@ -318,7 +340,7 @@ class IElement(object):
             - role_name: string or lambda.
 
         Returns:
-            - Element that was found otherwise None.
+            - Element that was found otherwise exception will be raised.
         """
 
     @abstractmethod
@@ -347,6 +369,33 @@ class IElement(object):
 
         Returns:
             - List of all elements that was found otherwise None.
+        """
+
+    @abstractmethod
+    def is_object_exists(self, **kwargs):
+        """
+        Verifies is object exists.
+
+        Arguments:
+
+            - role: string or lambda e.g. lambda x: x == 13
+            - name: string or lambda.
+            - c_name: string or lambda.
+            - location: string or lambda.
+            - value: string or lambda.
+            - default_action: string or lambda.
+            - description: string or lambda.
+            - help: string or lambda.
+            - help_topic: string or lambda.
+            - keyboard_shortcut: string or lambda.
+            - parent: string or lambda.
+            - selection: string or lambda.
+            - state: string or lambda.
+            - focus: string or lambda.
+            - role_name: string or lambda.
+
+        Returns:
+            - True if object exists otherwise False.
         """
 
     @abstractmethod

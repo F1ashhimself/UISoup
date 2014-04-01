@@ -18,6 +18,7 @@ __author__ = 'f1ashhimself@gmail.com'
 
 import ctypes
 import ctypes.wintypes
+from time import sleep
 
 from ..interfaces.i_mouse import IMouse
 from . import TooSaltyUISoupException
@@ -157,17 +158,29 @@ class WinMouse(IMouse):
         ctypes.windll.user32.mouse_event(
             flags, x_calc, y_calc, data, extra_info)
 
-    def move_mouse(self, x, y):
+    def move(self, x, y):
         self._verify_xy(x, y)
 
         self._do_event(
             self.MOUSEEVENTF_MOVE + self.MOUSEEVENTF_ABSOLUTE, x, y, 0, 0)
 
+    def drag(self, x1, y1, x2, y2, smooth=True):
+        self.press_button(x1, y1, self.LEFT_BUTTON)
+
+        for i in xrange(100):
+            x = x1 + (x2 - x1) * (i + 1) / 100.0
+            y = y1 + (y2 - y1) * (i + 1) / 100.0
+            if smooth:
+                sleep(.01)
+
+            self.move(int(x), int(y))
+        self.release_button()
+
     def press_button(self, x, y, button_name=LEFT_BUTTON):
         self._verify_xy(x, y)
         self._verify_button_name(button_name)
 
-        self.move_mouse(x, y)
+        self.move(x, y)
         self._do_event(
             self._compose_mouse_event(button_name, press=True, release=False),
             0, 0, 0, 0)
@@ -183,7 +196,7 @@ class WinMouse(IMouse):
         self._verify_xy(x, y)
         self._verify_button_name(button_name)
 
-        self.move_mouse(x, y)
+        self.move(x, y)
         self._do_event(
             self._compose_mouse_event(button_name, press=True, release=True),
             0, 0, 0, 0)

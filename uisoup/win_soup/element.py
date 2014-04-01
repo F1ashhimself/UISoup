@@ -28,6 +28,7 @@ import xml.dom.minidom
 
 from .mouse import WinMouse
 from ..interfaces.i_element import IElement
+from .. import TooSaltyUISoupException
 
 
 class WinElement(IElement):
@@ -91,8 +92,8 @@ class WinElement(IElement):
         53: u'dgrm',  # Diagram
         54: u'anim',  # Animation
         55: u'eqtn',  # Equation
-        56: u'dbtn',  # DropDownButton
-        57: u'cbo',  # MenuButton
+        56: u'btn',  # DropDownButton
+        57: u'mnu',  # MenuButton
         58: u'gbtn',  # GridDropDownButton
         59: u'wspace',  # WhiteSpace
         60: u'ptablst',  # PageTabList
@@ -148,37 +149,111 @@ class WinElement(IElement):
         REMOVESELECTION = 0x10
         VALID = 0x20
 
-    def __init__(self, i_accessible, i_object_id):
+    class _EnumWindowsCallback(object):
+
+        same_proc_handles = set()
+
+        @classmethod
+        def callback(cls, handle, proc_id):
+
+            curr_proc_id = ctypes.c_long()
+
+            ctypes.windll.user32.GetWindowThreadProcessId(
+                handle, ctypes.byref(curr_proc_id))
+
+            if curr_proc_id.value == proc_id:
+                cls.same_proc_handles.add(handle)
+
+    def __init__(self, obj_handle, i_object_id):
+        if isinstance(obj_handle, comtypes.gen.Accessibility.IAccessible):
+            i_accessible = obj_handle
+        else:
+            i_accessible = ctypes.POINTER(
+                comtypes.gen.Accessibility.IAccessible)()
+            ctypes.oledll.oleacc.AccessibleObjectFromWindow(
+                    obj_handle,
+                    0,
+                    ctypes.byref(comtypes.gen.Accessibility.IAccessible._iid_),
+                    ctypes.byref(i_accessible))
+
         self._i_accessible = i_accessible
         self.i_object_id = i_object_id
-        self._dict_cache = dict()
+        self._cache = set()
 
-    def click(self):
+    def click(self, x_offset=0, y_offset=0):
         x, y, w, h = self.acc_location
-        self._mouse.click(x + w / 2, y + h / 2)
+        x += x_offset if x_offset is not None else w / 2
+        y += y_offset if y_offset is not None else h / 2
 
-    def right_click(self):
+        self._mouse.click(x, y)
+
+    def right_click(self, x_offset=0, y_offset=0):
         x, y, w, h = self.acc_location
-        self._mouse.click(x + w / 2, y + h / 2, self._mouse.RIGHT_BUTTON)
+        x += x_offset if x_offset is not None else w / 2
+        y += y_offset if y_offset is not None else h / 2
 
-    def double_click(self):
+        self._mouse.click(x, y, self._mouse.RIGHT_BUTTON)
+
+    def double_click(self, x_offset=0, y_offset=0):
         x, y, w, h = self.acc_location
-        self._mouse.double_click(x + w / 2, y + h / 2)
+        x += x_offset if x_offset is not None else w / 2
+        y += y_offset if y_offset is not None else h / 2
 
-    def drag_to(self, x, y, x_offset=None, y_offset=None):
+        self._mouse.double_click(x, y)
+
+    def drag_to(self, x, y, x_offset=None, y_offset=None, smooth=True):
         el_x, el_y, el_w, el_h = self.acc_location
-        if not x_offset:
-            x_offset = el_w / 2
+        el_x += x_offset if x_offset is not None else el_w / 2
+        el_y += y_offset if y_offset is not None else el_h / 2
 
-        if not y_offset:
-            y_offset = el_h / 2
-
-        self._mouse.press_button(el_x + x_offset, el_y + y_offset)
-        self._mouse.move_mouse(x, y)
-        self._mouse.release_button()
+        self._mouse.drag(el_x, el_y, x, y, smooth)
 
     def check_state(self, state):
         return self.acc_state & state
+
+    def _find_windows_by_same_proc(self):
+        """
+        Find window by same process id.
+
+        Arguments:
+            - None
+
+        Returns:
+            - list of windows.
+        """
+
+        enum_windows_proc = \
+                ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_long,
+                                   ctypes.c_long)
+        self._EnumWindowsCallback.same_proc_handles = set()
+        ctypes.windll.user32.EnumWindows(
+            enum_windows_proc(
+                self._EnumWindowsCallback.callback), self.proc_id)
+
+        if self.hwnd in  self._EnumWindowsCallback.same_proc_handles:
+            self._EnumWindowsCallback.same_proc_handles.remove(self.hwnd)
+
+        result = [WinElement(hwnd, 0) for hwnd in
+                  self._EnumWindowsCallback.same_proc_handles]
+
+        return result
+
+    @property
+    def hwnd(self):
+        hwnd = ctypes.c_int()
+        ctypes.oledll.oleacc.WindowFromAccessibleObject(self._i_accessible,
+                                                        ctypes.byref(hwnd))
+
+        return hwnd.value
+
+    @property
+    def proc_id(self):
+        hwnd = ctypes.c_long(self.hwnd)
+        proc_id = ctypes.c_ulong()
+        ctypes.windll.user32.GetWindowThreadProcessId(hwnd,
+                                                      ctypes.byref(proc_id))
+
+        return proc_id.value
 
     @property
     def is_selected(self):
@@ -429,7 +504,7 @@ class WinElement(IElement):
         regex = regex.replace(r'\?', r'[\s\S]{1}')
         regex = regex.replace(r'\*', r'[\s\S]*')
 
-        return regex
+        return '^%s$' % regex
 
     def _match(self, only_visible, **kwargs):
         """
@@ -491,7 +566,7 @@ class WinElement(IElement):
             - Yield found element.
         """
 
-        for obj_element in self._dict_cache:
+        for obj_element in self._cache:
             if obj_element._match(only_visible, **kwargs):
                 yield obj_element
 
@@ -507,9 +582,10 @@ class WinElement(IElement):
         """
 
         lst_queue = list(self)
+        lst_queue.extend(self._find_windows_by_same_proc())
         while lst_queue:
             obj_element = lst_queue.pop(0)
-            self._dict_cache[obj_element] = 1
+            self._cache.add(obj_element)
 
             if obj_element._match(only_visible, **kwargs):
                 yield obj_element
@@ -526,7 +602,10 @@ class WinElement(IElement):
                 return self._finditer(only_visible,
                                       **kwargs).next()
             except StopIteration:
-                return None
+                attrs = {k: v.decode('utf8', 'replace') for
+                         k, v in kwargs.iteritems()}
+                raise TooSaltyUISoupException(
+                    'Can\'t find object with attributes "%s".' % attrs)
 
     def findall(self, only_visible=True, **kwargs):
         result = self._finditer(only_visible, **kwargs)
@@ -534,6 +613,13 @@ class WinElement(IElement):
             result = list(result)
 
         return result
+
+    def is_object_exists(self, **kwargs):
+        try:
+            self.find(**kwargs)
+            return True
+        except TooSaltyUISoupException:
+            return False
 
     def toxml(self):
         obj_document = xml.dom.minidom.Document()

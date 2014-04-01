@@ -86,6 +86,7 @@ class WinSoup(ISoup):
             enum_windows_proc = \
                 ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.POINTER(ctypes.c_int),
                                    ctypes.POINTER(ctypes.c_int))
+            self._EnumWindowsCallback.last_handle = None
             ctypes.windll.user32.EnumWindows(enum_windows_proc(
                 self._EnumWindowsCallback.callback),
                 ctypes.c_wchar_p(regex))
@@ -97,15 +98,7 @@ class WinSoup(ISoup):
                                               obj_name)
 
         try:
-            i_accessible = ctypes.POINTER(
-                comtypes.gen.Accessibility.IAccessible)()
-            ctypes.oledll.oleacc.AccessibleObjectFromWindow(
-                obj_handle,
-                0,
-                ctypes.byref(comtypes.gen.Accessibility.IAccessible._iid_),
-                ctypes.byref(i_accessible))
-
-            return WinElement(i_accessible, 0)
+            return WinElement(obj_handle, 0)
         except:
             raise TooSaltyUISoupException(
                 'Error when retrieving window with handle=%r' % obj_handle)

@@ -58,7 +58,7 @@ class ISoup(object):
 
         Arguments:
             - obj_handle: window name (string) or window handler (int)
-            otherwise Desktop Window will be returned
+            otherwise Desktop Window will be checked.
 
         Returns:
             - True if window exists otherwise False.
