@@ -171,10 +171,10 @@ class WinElement(IElement):
             i_accessible = ctypes.POINTER(
                 comtypes.gen.Accessibility.IAccessible)()
             ctypes.oledll.oleacc.AccessibleObjectFromWindow(
-                    obj_handle,
-                    0,
-                    ctypes.byref(comtypes.gen.Accessibility.IAccessible._iid_),
-                    ctypes.byref(i_accessible))
+                obj_handle,
+                0,
+                ctypes.byref(comtypes.gen.Accessibility.IAccessible._iid_),
+                ctypes.byref(i_accessible))
 
         self._i_accessible = i_accessible
         self.i_object_id = i_object_id
@@ -223,14 +223,14 @@ class WinElement(IElement):
         """
 
         enum_windows_proc = \
-                ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_long,
-                                   ctypes.c_long)
+            ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_long,
+                               ctypes.c_long)
         self._EnumWindowsCallback.same_proc_handles = set()
         ctypes.windll.user32.EnumWindows(
             enum_windows_proc(
                 self._EnumWindowsCallback.callback), self.proc_id)
 
-        if self.hwnd in  self._EnumWindowsCallback.same_proc_handles:
+        if self.hwnd in self._EnumWindowsCallback.same_proc_handles:
             self._EnumWindowsCallback.same_proc_handles.remove(self.hwnd)
 
         result = [WinElement(hwnd, 0) for hwnd in
@@ -582,7 +582,8 @@ class WinElement(IElement):
         """
 
         lst_queue = list(self)
-        lst_queue.extend(self._find_windows_by_same_proc())
+        if self.acc_parent and self.acc_parent.acc_c_name == 'clntDesktop':
+            lst_queue.extend(self._find_windows_by_same_proc())
         while lst_queue:
             obj_element = lst_queue.pop(0)
             self._cache.add(obj_element)
@@ -602,10 +603,10 @@ class WinElement(IElement):
                 return self._finditer(only_visible,
                                       **kwargs).next()
             except StopIteration:
-                attrs = {k: v.decode('utf8', 'replace') for
-                         k, v in kwargs.iteritems()}
+                attrs = ['%s=%s' % (k, v) for k, v in kwargs.iteritems()]
                 raise TooSaltyUISoupException(
-                    'Can\'t find object with attributes "%s".' % attrs)
+                    'Can\'t find object with attributes "%s".' %
+                    '; '.join(attrs))
 
     def findall(self, only_visible=True, **kwargs):
         result = self._finditer(only_visible, **kwargs)

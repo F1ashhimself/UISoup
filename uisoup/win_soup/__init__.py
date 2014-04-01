@@ -45,7 +45,8 @@ class WinSoup(ISoup):
         @classmethod
         def callback(cls, handle, wildcard):
             wildcard = \
-                ctypes.cast(wildcard, ctypes.c_wchar_p).value.encode("utf-8")
+                ctypes.cast(wildcard, ctypes.c_wchar_p).value.encode('utf-8',
+                                                                     'replace')
 
             length = ctypes.windll.user32.GetWindowTextLengthW(handle) + 1
             buff = ctypes.create_unicode_buffer(length)
