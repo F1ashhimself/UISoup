@@ -56,6 +56,8 @@ class WinSoup(ISoup):
             if re.match(wildcard, win_text):
                 cls.last_handle = handle
 
+            return True
+
     def get_object_by_coordinates(self, x, y):
         obj_point = ctypes.wintypes.POINT()
         obj_point.x = x

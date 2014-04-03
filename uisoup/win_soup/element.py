@@ -164,6 +164,8 @@ class WinElement(IElement):
             if curr_proc_id.value == proc_id:
                 cls.same_proc_handles.add(handle)
 
+            return True
+
     def __init__(self, obj_handle, i_object_id):
         if isinstance(obj_handle, comtypes.gen.Accessibility.IAccessible):
             i_accessible = obj_handle
