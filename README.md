@@ -1,7 +1,7 @@
 UISoup
 ======
 
-#### This library supports UI-related testing using Python.
+#### This library supports UI-related testing using Python. (Only Python x86 is supported)
 
 ##### How to use examples:
 
