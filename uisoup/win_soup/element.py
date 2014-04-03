@@ -320,7 +320,7 @@ class WinElement(IElement):
 
     @property
     def acc_c_name(self):
-        return self.acc_role_name + self.acc_name
+        return self.acc_role_name + self.acc_name if self.acc_name else ''
 
     @property
     def acc_location(self):
@@ -594,7 +594,10 @@ class WinElement(IElement):
                 yield obj_element
 
             if obj_element._i_accessible.accChildCount:
-                lst_queue[:0] = list(obj_element)
+                childs = [el for el in list(obj_element) if
+                          el._i_accessible != obj_element._i_accessible]
+
+                lst_queue[:0] = childs
 
     def find(self, only_visible=True, **kwargs):
         try:
