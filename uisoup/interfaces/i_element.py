@@ -124,6 +124,12 @@ class IElement(object):
         """
 
     @abstractproperty
+    def is_top_level_window(self):
+        """
+        Indicates is top level window or not.
+        """
+
+    @abstractproperty
     def is_selected(self):
         """
         Indicates selected state.
@@ -151,6 +157,12 @@ class IElement(object):
     def is_enabled(self):
         """
         Indicates enabled state.
+        """
+
+    @abstractproperty
+    def acc_parent_count(self):
+        """
+        Property for parent child count.
         """
 
     @abstractproperty

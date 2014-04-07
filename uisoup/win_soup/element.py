@@ -258,6 +258,11 @@ class WinElement(IElement):
         return proc_id.value
 
     @property
+    def is_top_level_window(self):
+        # Top level window have 2 parents, clnt and frm for Desktop.
+        return self.acc_parent_count == 2
+
+    @property
     def is_selected(self):
         return self.check_state(self.StateFlag.SYSTEM_SELECTED)
 
@@ -276,6 +281,16 @@ class WinElement(IElement):
     @property
     def is_enabled(self):
         return not self.check_state(self.StateFlag.SYSTEM_UNAVAILABLE)
+
+    @property
+    def acc_parent_count(self):
+        parent_count = 0
+        parent = self.acc_parent
+        while parent:
+            parent_count += 1
+            parent = parent.acc_parent
+
+        return parent_count
 
     @property
     def acc_child_count(self):
@@ -585,7 +600,7 @@ class WinElement(IElement):
 
         lst_queue = list(self)
 
-        if self.acc_parent and self.acc_parent.acc_c_name == 'clntDesktop':
+        if self.is_top_level_window:
             lst_queue.extend(self._find_windows_by_same_proc())
 
         while lst_queue:
