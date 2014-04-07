@@ -11,13 +11,10 @@ def package_env(file_name, strict=False):
     else:
         return ''
 
-VERSION = package_env('VERSION')
-
-
 if __name__ == '__main__':
     setup(
         name='UISoup',
-        version=VERSION,
+        version='1.3.1',
         description='Library for UI testing.',
         long_description=package_env('README.rst'),
         author='Max Beloborodko',
