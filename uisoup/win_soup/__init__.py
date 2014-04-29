@@ -98,7 +98,8 @@ class WinSoup(ISoup):
             obj_handle = self._EnumWindowsCallback.last_handle
 
             if not obj_handle:
-                obj_name = obj_name.encode(sys.stdout.encoding, errors='ignore')
+                obj_name = obj_name.encode(sys.stdout.encoding,
+                                           errors='ignore')
                 raise TooSaltyUISoupException('Can\'t find window "%s".' %
                                               obj_name)
 

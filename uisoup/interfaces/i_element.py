@@ -29,7 +29,7 @@ class IElement(object):
     @abstractmethod
     def __init__(self, obj_handle, i_object_id):
         """
-        Constructor
+        Constructor.
 
         Arguments:
             - obj_handle: instance of i_accessible or window handle.

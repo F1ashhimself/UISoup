@@ -31,6 +31,9 @@ from ..interfaces.i_element import IElement
 from .. import TooSaltyUISoupException
 
 
+CO_E_OBJNOTCONNECTED = -2147220995
+
+
 class WinElement(IElement):
     """
     http://msdn.microsoft.com/en-us/library/dd318466(v=VS.85).aspx
@@ -66,7 +69,7 @@ class WinElement(IElement):
         27: u'col',  # Column
         28: u'tblc',  # Row
         29: u'tblc',  # Cell
-        30: u'Link',  # Link
+        30: u'lnk',  # Link
         31: u'hbal',  # HelpBalloon
         32: u'chr',  # Character
         33: u'lst',  # List
@@ -477,6 +480,7 @@ class WinElement(IElement):
     def __iter__(self):
         if self.i_object_id > 0:
             raise StopIteration()
+
         obj_acc_child_array = (comtypes.automation.VARIANT *
                                self._i_accessible.accChildCount)()
         obj_acc_child_count = ctypes.c_long()
@@ -610,7 +614,7 @@ class WinElement(IElement):
             if obj_element._match(only_visible, **kwargs):
                 yield obj_element
 
-            if obj_element._i_accessible.accChildCount:
+            if self._get_child_count_safely(obj_element._i_accessible):
                 childs = [el for el in list(obj_element) if
                           el._i_accessible != obj_element._i_accessible]
 
@@ -666,8 +670,26 @@ class WinElement(IElement):
             obj_sub_tree.attributes['Location'] = str_location
             obj_tree.appendChild(obj_sub_tree)
 
-            if obj_element._i_accessible.accChildCount:
+            if self._get_child_count_safely(obj_element._i_accessible):
                 for obj_element_child in obj_element:
                     lst_queue.append((obj_element_child, obj_sub_tree))
 
         return obj_document.toprettyxml()
+
+    def _get_child_count_safely(self, i_accessible):
+        """
+        Safely gets child count.
+
+        Arguments:
+            - i_accessible: instance of i_accessible.
+
+        Returns:
+            - int, object child count.
+        """
+
+        try:
+            return i_accessible.accChildCount
+        except Exception as ex:
+            if isinstance(ex, comtypes.COMError) and ex.hresult in \
+                    (CO_E_OBJNOTCONNECTED,):
+                return 0

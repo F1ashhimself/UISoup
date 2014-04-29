@@ -14,7 +14,7 @@ def package_env(file_name, strict=False):
 if __name__ == '__main__':
     setup(
         name='UISoup',
-        version='1.3.1',
+        version='1.3.2',
         description='Library for UI testing.',
         long_description=package_env('README.rst'),
         author='Max Beloborodko',
@@ -22,7 +22,7 @@ if __name__ == '__main__':
         packages=['uisoup'] + ['.'.join(('uisoup', p)) for p in
                                find_packages('uisoup')],
         include_package_data=True,
-        install_requires=['selenium', 'comtypes'],
+        install_requires=['comtypes'],
         zip_safe=False,
         entry_points={
             'console_scripts': [
