@@ -214,7 +214,7 @@ class WinElement(IElement):
         self._mouse.drag(el_x, el_y, x, y, smooth)
 
     def check_state(self, state):
-        return self.acc_state & state
+        return bool(self.acc_state & state)
 
     def _find_windows_by_same_proc(self):
         """
