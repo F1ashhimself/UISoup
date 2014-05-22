@@ -389,7 +389,6 @@ class IElement(object):
         Verifies is object exists.
 
         Arguments:
-
             - role: string or lambda e.g. lambda x: x == 13
             - name: string or lambda.
             - c_name: string or lambda.
