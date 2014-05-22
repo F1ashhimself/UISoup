@@ -345,11 +345,12 @@ class IElement(object):
             - help: string or lambda.
             - help_topic: string or lambda.
             - keyboard_shortcut: string or lambda.
-            - parent: string or lambda.
             - selection: string or lambda.
             - state: string or lambda.
             - focus: string or lambda.
             - role_name: string or lambda.
+            - parent_count: string or lambda.
+            - child_count: string or lambda.
 
         Returns:
             - Element that was found otherwise exception will be raised.
@@ -373,11 +374,12 @@ class IElement(object):
             - help: string or lambda.
             - help_topic: string or lambda.
             - keyboard_shortcut: string or lambda.
-            - parent: string or lambda.
             - selection: string or lambda.
             - state: string or lambda.
             - focus: string or lambda.
             - role_name: string or lambda.
+            - parent_count: string or lambda.
+            - child_count: string or lambda.
 
         Returns:
             - List of all elements that was found otherwise None.
@@ -399,11 +401,12 @@ class IElement(object):
             - help: string or lambda.
             - help_topic: string or lambda.
             - keyboard_shortcut: string or lambda.
-            - parent: string or lambda.
             - selection: string or lambda.
             - state: string or lambda.
             - focus: string or lambda.
             - role_name: string or lambda.
+            - parent_count: string or lambda.
+            - child_count: string or lambda.
 
         Returns:
             - True if object exists otherwise False.
