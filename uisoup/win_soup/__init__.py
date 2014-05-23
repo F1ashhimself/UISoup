@@ -38,6 +38,7 @@ class WinSoup(ISoup):
 
     mouse = WinMouse()
     keyboard = WinKeyboard()
+    _default_sys_encoding = sys.stdout.encoding
 
     class _EnumWindowsCallback(object):
 
@@ -98,7 +99,7 @@ class WinSoup(ISoup):
             obj_handle = self._EnumWindowsCallback.last_handle
 
             if not obj_handle:
-                obj_name = obj_name.encode(sys.stdout.encoding,
+                obj_name = obj_name.encode(self._default_sys_encoding,
                                            errors='ignore')
                 raise TooSaltyUISoupException('Can\'t find window "%s".' %
                                               obj_name)
