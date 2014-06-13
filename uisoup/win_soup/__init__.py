@@ -25,6 +25,7 @@ import comtypes.automation
 import comtypes.client
 import sys
 
+from ..utils.win_utils import WinUtils
 from .. import TooSaltyUISoupException
 from ..interfaces.i_soup import ISoup
 from .element import WinElement
@@ -86,7 +87,7 @@ class WinSoup(ISoup):
         elif isinstance(obj_handle, basestring):
             obj_name = unicode(obj_handle)
 
-            regex = WinElement._convert_wildcard_to_regex(obj_name)
+            regex = WinUtils.convert_wildcard_to_regex(obj_name)
 
             enum_windows_proc = \
                 ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.POINTER(ctypes.c_int),
