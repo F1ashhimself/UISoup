@@ -27,16 +27,6 @@ class IElement(object):
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def __init__(self, obj_handle, i_object_id):
-        """
-        Constructor.
-
-        Arguments:
-            - obj_handle: instance of i_accessible or window handle.
-            - i_object_id: int, object id.
-        """
-
-    @abstractmethod
     def click(self, x_offset=None, y_offset=None):
         """
         Clicks by left mouse button on this object.
@@ -109,12 +99,6 @@ class IElement(object):
 
         Returns:
             - bool that describes state.
-        """
-
-    @abstractproperty
-    def hwnd(self):
-        """
-        Indicates window handle.
         """
 
     @abstractproperty
@@ -240,33 +224,9 @@ class IElement(object):
         """
 
     @abstractproperty
-    def acc_default_action(self):
-        """
-        Property for element default action.
-        """
-
-    @abstractproperty
     def acc_description(self):
         """
         Property for element description.
-        """
-
-    @abstractproperty
-    def acc_help(self):
-        """
-        Property for element help.
-        """
-
-    @abstractproperty
-    def acc_help_topic(self):
-        """
-        Property for element topic.
-        """
-
-    @abstractproperty
-    def acc_keyboard_shortcut(self):
-        """
-        Property for element keyboard shortcut.
         """
 
     @abstractproperty
@@ -285,18 +245,6 @@ class IElement(object):
     def acc_state(self):
         """
         Property for element state.
-        """
-
-    @abstractmethod
-    def acc_do_default_action(self):
-        """
-        Does default action for element.
-
-        Arguments:
-            - None
-
-        Returns:
-            - None
         """
 
     @abstractproperty
@@ -340,11 +288,7 @@ class IElement(object):
             - c_name: string or lambda.
             - location: string or lambda.
             - value: string or lambda.
-            - default_action: string or lambda.
             - description: string or lambda.
-            - help: string or lambda.
-            - help_topic: string or lambda.
-            - keyboard_shortcut: string or lambda.
             - selection: string or lambda.
             - state: string or lambda.
             - focus: string or lambda.
@@ -369,11 +313,7 @@ class IElement(object):
             - c_name: string or lambda.
             - location: string or lambda.
             - value: string or lambda.
-            - default_action: string or lambda.
             - description: string or lambda.
-            - help: string or lambda.
-            - help_topic: string or lambda.
-            - keyboard_shortcut: string or lambda.
             - selection: string or lambda.
             - state: string or lambda.
             - focus: string or lambda.
@@ -396,11 +336,7 @@ class IElement(object):
             - c_name: string or lambda.
             - location: string or lambda.
             - value: string or lambda.
-            - default_action: string or lambda.
             - description: string or lambda.
-            - help: string or lambda.
-            - help_topic: string or lambda.
-            - keyboard_shortcut: string or lambda.
             - selection: string or lambda.
             - state: string or lambda.
             - focus: string or lambda.

@@ -27,6 +27,7 @@ from types import FunctionType
 import xml.dom.minidom
 
 from .mouse import WinMouse
+from ..utils.win_utils import WinUtils
 from ..interfaces.i_element import IElement
 from .. import TooSaltyUISoupException
 
@@ -170,6 +171,14 @@ class WinElement(IElement):
             return True
 
     def __init__(self, obj_handle, i_object_id):
+        """
+        Constructor.
+
+        Arguments:
+            - obj_handle: instance of i_accessible or window handle.
+            - i_object_id: int, object id.
+        """
+
         if isinstance(obj_handle, comtypes.gen.Accessibility.IAccessible):
             i_accessible = obj_handle
         else:
@@ -235,8 +244,8 @@ class WinElement(IElement):
             enum_windows_proc(
                 self._EnumWindowsCallback.callback), self.proc_id)
 
-        if self.hwnd in self._EnumWindowsCallback.same_proc_handles:
-            self._EnumWindowsCallback.same_proc_handles.remove(self.hwnd)
+        if self._hwnd in self._EnumWindowsCallback.same_proc_handles:
+            self._EnumWindowsCallback.same_proc_handles.remove(self._hwnd)
 
         result = [WinElement(hwnd, 0) for hwnd in
                   self._EnumWindowsCallback.same_proc_handles]
@@ -244,7 +253,7 @@ class WinElement(IElement):
         return result
 
     @property
-    def hwnd(self):
+    def _hwnd(self):
         hwnd = ctypes.c_int()
         ctypes.oledll.oleacc.WindowFromAccessibleObject(self._i_accessible,
                                                         ctypes.byref(hwnd))
@@ -253,7 +262,7 @@ class WinElement(IElement):
 
     @property
     def proc_id(self):
-        hwnd = ctypes.c_long(self.hwnd)
+        hwnd = ctypes.c_long(self._hwnd)
         proc_id = ctypes.c_ulong()
         ctypes.windll.user32.GetWindowThreadProcessId(hwnd,
                                                       ctypes.byref(proc_id))
@@ -378,17 +387,6 @@ class WinElement(IElement):
         self._i_accessible._IAccessible__com__set_accValue(obj_child_id, value)
 
     @property
-    def acc_default_action(self):
-        obj_child_id = comtypes.automation.VARIANT()
-        obj_child_id.vt = comtypes.automation.VT_I4
-        obj_child_id.value = self.i_object_id
-        obj_default_action = comtypes.automation.BSTR()
-        self._i_accessible._IAccessible__com__get_accDefaultAction(
-            obj_child_id, ctypes.byref(obj_default_action))
-
-        return obj_default_action.value
-
-    @property
     def acc_description(self):
         obj_child_id = comtypes.automation.VARIANT()
         obj_child_id.vt = comtypes.automation.VT_I4
@@ -398,32 +396,6 @@ class WinElement(IElement):
             obj_child_id, ctypes.byref(obj_description))
 
         return obj_description.value
-
-    @property
-    def acc_help(self):
-        obj_child_id = comtypes.automation.VARIANT()
-        obj_child_id.vt = comtypes.automation.VT_I4
-        obj_child_id.value = self.i_object_id
-        obj_help = comtypes.automation.BSTR()
-        self._i_accessible._IAccessible__com__get_accHelp(
-            obj_child_id, ctypes.byref(obj_help))
-
-        return obj_help.value
-
-    @property
-    def acc_help_topic(self):
-        return self._i_accessible.acc_help_topic()
-
-    @property
-    def acc_keyboard_shortcut(self):
-        obj_child_id = comtypes.automation.VARIANT()
-        obj_child_id.vt = comtypes.automation.VT_I4
-        obj_child_id.value = self.i_object_id
-        obj_keyboard_shortcut = comtypes.automation.BSTR()
-        self._i_accessible._IAccessible__com__get_acccKeyboardShortcut(
-            obj_child_id, ctypes.byref(obj_keyboard_shortcut))
-
-        return obj_keyboard_shortcut.value
 
     @property
     def acc_parent(self):
@@ -451,13 +423,6 @@ class WinElement(IElement):
             obj_child_id, ctypes.byref(obj_state))
 
         return obj_state.value
-
-    def acc_do_default_action(self):
-        obj_child_id = comtypes.automation.VARIANT()
-        obj_child_id.vt = comtypes.automation.VT_I4
-        obj_child_id.value = self.i_object_id
-
-        self._i_accessible._IAccessible__com_accDoDefaultAction(obj_child_id)
 
     @property
     def acc_focus(self):
@@ -509,24 +474,6 @@ class WinElement(IElement):
 
         return result
 
-    @classmethod
-    def _convert_wildcard_to_regex(cls, wildcard):
-        """
-        Converts wildcard to regex.
-
-        Arguments:
-            - wildcard: string, wildcard.
-
-        Returns:
-            - String with regex pattern.
-        """
-
-        regex = re.escape(wildcard)
-        regex = regex.replace(r'\?', r'[\s\S]{1}')
-        regex = regex.replace(r'\*', r'[\s\S]*')
-
-        return '^%s$' % regex
-
     def _match(self, only_visible, **kwargs):
         """
         Match method.
@@ -568,7 +515,7 @@ class WinElement(IElement):
                     if not expected_result(attr):
                         return False
                 else:
-                    regex = self._convert_wildcard_to_regex(expected_result)
+                    regex = WinUtils.convert_wildcard_to_regex(expected_result)
                     if not re.match(regex, attr):
                         return False
         except:
