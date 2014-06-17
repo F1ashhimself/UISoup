@@ -36,7 +36,6 @@ class MacSoup(ISoup):
     _default_sys_encoding = sys.stdout.encoding
 
     def get_object_by_coordinates(self, x, y):
-
         window_handle = \
             MacUtils.ApplescriptExecutor.get_frontmost_window_name()
         window = self.get_window(window_handle)
@@ -49,7 +48,7 @@ class MacSoup(ISoup):
         cur_x, cur_y = self.mouse.get_position()
         for element in sorted_objects:
             x, y, w, h = element.acc_location()
-            if x < cur_x < x + w and y < cur_y < y + h:
+            if x <= cur_x < x + w and y <= cur_y < y + h:
                 result = element
                 break
 
