@@ -56,16 +56,18 @@ class MacElement(IElement):
         'AXGenericElement': u'gen'
     }
 
-    def __init__(self, obj_selector, process_id):
+    def __init__(self, obj_selector, layer_num, process_id):
         """
         Constructor.
 
         Arguments:
             - obj_selector: string, object selector.
+            - layer_num: int, layer number. I.e. main window will be layer 0.
             - process_id: int, process id.
         """
 
         self._object_selector = obj_selector
+        self._layer_num = layer_num
         self._process_id = process_id
 
     def click(self, x_offset=None, y_offset=None):

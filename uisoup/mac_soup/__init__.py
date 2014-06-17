@@ -17,26 +17,43 @@
 
 __author__ = 'f1ashhimself@gmail.com'
 
-import re
 import sys
-from subprocess import CalledProcessError
+import re
 
 from Quartz import CoreGraphics as cg
 
-from ..interfaces.i_soup import ISoup
-from ..utils.mac_utils import MacUtils, ApplescriptCommands
-from .element import MacElement
-from .. import TooSaltyUISoupException
+# TODO: change to relative import.
+from uisoup.interfaces.i_soup import ISoup
+from uisoup.utils.mac_utils import MacUtils
+from uisoup.mac_soup.element import MacElement
+from uisoup import TooSaltyUISoupException
 
 
 class MacSoup(ISoup):
 
-    mouse = None
-    keyboard = None
+    mouse = None  # TODO: add implementation.
+    keyboard = None  # TODO: add implementation.
     _default_sys_encoding = sys.stdout.encoding
 
     def get_object_by_coordinates(self, x, y):
-        pass
+
+        window_handle = \
+            MacUtils.ApplescriptExecutor.get_frontmost_window_name()
+        window = self.get_window(window_handle)
+
+        # Sorting by layer from big to small.
+        sorted_objects = sorted(window.findall(),
+                                lambda x, y: y._layer_num - x._layer_num)
+
+        result = None
+        cur_x, cur_y = self.mouse.get_position()
+        for element in sorted_objects:
+            x, y, w, h = element.acc_location()
+            if x < cur_x < x + w and y < cur_y < y + h:
+                result = element
+                break
+
+        return result
 
     def is_window_exists(self, obj_handle):
         try:
@@ -70,18 +87,13 @@ class MacSoup(ISoup):
                                           obj_name)
         window = window[0]
         process_name = window['kCGWindowOwnerName']
-        process_id = window['kCGWindowOwnerPID']
-        selector = MacUtils.execute_applescript_command(
-            ApplescriptCommands.get_front_window_element(
-                process_name)).strip()
+        process_id = int(window['kCGWindowOwnerPID'])
+        selector = \
+            MacUtils.ApplescriptExecutor.get_front_window_element(process_name)
         selector = \
             selector if type(selector) == unicode else selector.decode('utf-8')
 
-        template = r'window %s of application process %s'
-        match = re.match(template % ('(.+)', '(.+)'), selector)
-        window_selector = template % tuple('"%s"' % e for e in match.groups())
-
-        return MacElement(window_selector, process_id)
+        return MacElement(selector, 0, process_id)
 
     def get_visible_window_list(self):
         win_list = cg.CGWindowListCopyWindowInfo(
@@ -99,10 +111,15 @@ class MacSoup(ISoup):
         for win_name in win_names:
             try:
                 windows.append(self.get_window(win_name))
-            except CalledProcessError:
+            except TooSaltyUISoupException:
                 continue
 
         return windows
 
     def get_visible_object_list(self, window_name):
-        pass
+        window = self.get_window(window_name)
+        objects = window.findall(
+            only_visible=True,
+            location=lambda x: 0 not in x[2:])
+
+        return objects

@@ -29,5 +29,5 @@ if system() == 'Windows':
     from uisoup.win_soup import WinSoup
     uisoup = WinSoup()
 else:
-    raise RuntimeError('We are sorry but we don\'t have UISoup implementation '
-                       'for "%s" OS.' % system())
+    from uisoup.mac_soup import MacSoup
+    uisoup = MacSoup()

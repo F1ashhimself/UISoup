@@ -45,13 +45,8 @@ class UIInspector(object):
                                    'acc_role',
                                    'acc_name',
                                    'acc_value',
-                                   'acc_state',
                                    'acc_location',
                                    'acc_description',
-                                   'acc_keyboard_shortcut',
-                                   'acc_default_action',
-                                   'acc_help',
-                                   'acc_help_topic',
                                    'acc_child_count']
 
         for attr in lst_attribute_name_list:
@@ -61,7 +56,6 @@ class UIInspector(object):
                     dict_info[attr] = value()
                 else:
                     dict_info[attr] = value
-
             except:
                 dict_info[attr] = None
 

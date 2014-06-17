@@ -18,76 +18,12 @@
 __author__ = 'f1ashhimself@gmail.com'
 
 
-from subprocess import check_output
+import struct
+from Foundation import NSAppleScript
+from Carbon import AppleEvents
 
 from ..utils import _Utils
-
-
-class ApplescriptCommands(object):
-
-    @classmethod
-    def get_front_window_element(cls, process_name):
-        """
-        Gets front window element by given process name.
-
-        Arguments:
-            - process_name: string, name of process.
-
-        Returns:
-            - List with Applescript commands.
-        """
-
-        return ['tell application "System Events" to tell process "%s"' % process_name,
-                '  set visible to true',
-                '  return front window',
-                'end tell']
-
-    @classmethod
-    def get_element_by_selector(cls, process_name, selector):
-        """
-        Gets element by given process name.
-
-        Arguments:
-            - process_name: string, name of process.
-            - selector: string, selector of element.
-
-        Returns:
-            - List with Applescript commands.
-        """
-
-        return ['tell application "System Events" to tell process "%s"' % process_name,
-                '  set visible to true',
-                '  %s of application "System Events"' % selector,
-                'end tell']
-
-    @classmethod
-    def collect_all_window_elements(cls, process_name):
-        """
-        Collects all window elements by given process name.
-
-        Arguments:
-            - process_name: string, name of process.
-
-        Returns:
-            - List with Applescript commands.
-        """
-
-        return ['on buildElementsTree(uiElements)',
-                '  tell application "System Events" to tell process "%s"' % process_name,
-                '    set visible to true',
-                '    if uiElements = null then',
-                '      set uiElements to UI elements of front window',
-                '    end if',
-                '    set collectedElements to uiElements',
-                '    repeat with uiElement in collectedElements',
-                '      if name of attributes of uiElement contains "AXChildren" then',
-                '        set collectedElements to collectedElements & my buildElementsTree(value of attribute "AXChildren" of uiElement)',
-                '      end if',
-                '    end repeat',
-                '  end tell',
-                '  return collectedElements',
-                'end buildElementsTree',
-                'return my buildElementsTree(null)']
+from .. import TooSaltyUISoupException
 
 
 class MacUtils(_Utils):
@@ -105,9 +41,147 @@ class MacUtils(_Utils):
             - string with result of executed command.
         """
 
-        cmd_pattern = "-e '%s'"
-        cmd = [cmd] if isinstance(cmd, basestring) else cmd
-        full_cmd = \
-            ' '.join(['osascript'] + [cmd_pattern % c.strip() for c in cmd])
+        cmd = '\n'.join([cmd] if isinstance(cmd, basestring) else cmd)
 
-        return check_output(full_cmd, shell=True)
+        script = NSAppleScript.alloc().initWithSource_(cmd)
+        result = script.executeAndReturnError_(None)[0]
+
+        if not result:
+            raise TooSaltyUISoupException(
+                'Error when executing applescript command.')
+
+        return result
+
+    class ApplescriptExecutor(object):
+
+        @classmethod
+        def _get_aeKeyword(cls, four_char_code):
+            """
+            Gets aeKeyword from four character event code.
+
+            Arguments:
+                - four_char_code: str, four character event code.
+
+            Return:
+                - integer aeKeyword.
+            """
+
+            return struct.unpack('>I', four_char_code)[0]
+
+        @classmethod
+        def _parse_single_selector(cls, event_descriptor):
+            """
+            Parses single selector from NSAppleEventDescriptor.
+
+            Arguments:
+                - event_descriptor: NSAppleEventDescriptor, instance.
+
+            Returns:
+                - tuple with window name, process name.
+            """
+
+            seld_ = cls._get_aeKeyword(AppleEvents.keyAEKeyData)
+            from_ = \
+                cls._get_aeKeyword(AppleEvents.keyOriginalAddressAttr)
+            window_name = \
+                event_descriptor.descriptorForKeyword_(seld_).stringValue()
+            process_name = event_descriptor.descriptorForKeyword_(from_)\
+                .descriptorForKeyword_(seld_).stringValue()
+
+            return window_name, process_name
+
+        @classmethod
+        def get_frontmost_window_name(cls):
+            """
+            Gets front window name.
+
+            Arguments:
+                - None
+
+            Returns:
+                - string with combined name (window name + process name).
+            """
+
+            cmd = ['tell application "System Events" to tell process (name of first application process whose frontmost is true)',
+                   '  return (1st window whose value of attribute "AXMain" is true)',
+                   'end tell']
+
+            event_descriptor = MacUtils.execute_applescript_command(cmd)
+            window_name, process_name = cls._parse_single_selector(event_descriptor)
+
+            return window_name + process_name
+
+        @classmethod
+        def get_front_window_element(cls, process_name):
+            """
+            Gets front window element by given process name.
+
+            Arguments:
+                - process_name: string, name of process.
+
+            Returns:
+                - string with element selector.
+            """
+
+            cmd = ['tell application "System Events" to tell process "%s"'% process_name,
+                   '  set visible to true',
+                   '  return front window',
+                   'end tell']
+
+            event_descriptor = MacUtils.execute_applescript_command(cmd)
+            window_name, process_name = \
+                cls._parse_single_selector(event_descriptor)
+
+            result = 'window "%s" of application process "%s" of ' \
+                     'application "System Events"' % (window_name,
+                                                      process_name)
+
+            return result
+
+        @classmethod
+        def get_element_by_selector(cls, process_name, selector):
+            """
+            Gets element by given process name.
+
+            Arguments:
+                - process_name: string, name of process.
+                - selector: string, selector of element.
+
+            Returns:
+                - List with Applescript commands.
+            """
+
+            return ['tell application "System Events" to tell process "%s"' % process_name,
+                    '  set visible to true',
+                    '  %s of application "System Events"' % selector,
+                    'end tell']
+
+        @classmethod
+        def get_children_elements(cls, obj_selector, layer_num, process_name):
+            """
+            Gets all direct children elements.
+
+            Arguments:
+                - obj_selector: string, object selector.
+                - layer_num: int, layer number. I.e. main window will be layer 0.
+                - process_name: string, name of process.
+
+            Returns:
+                - List with Applescript commands.
+            """
+
+            return ['tell application "System Events" to tell process "%s"' % process_name,
+                    '  set visible to true',
+                    '  set uiElement to %s' % obj_selector,
+                    '  set layer to %s' % layer_num,
+                    '  if uiElement = null then',
+                    '    set layer to 0',
+                    '    set collectedElements to {UI elements of front window, layer}',
+                    '  else',
+                    '    set layer to layer + 1',
+                    '    if name of attributes of uiElement contains "AXChildren" then',
+                    '        set collectedElements to {value of attribute "AXChildren" of uiElement, layer}',
+                    '    end if',
+                    '  end if',
+                    'end tell',
+                    'return collectedElements']
