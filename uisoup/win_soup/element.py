@@ -222,8 +222,8 @@ class WinElement(IElement):
 
         self._mouse.drag(el_x, el_y, x, y, smooth)
 
-    def check_state(self, state):
-        return bool(self.acc_state & state)
+    def _check_state(self, state):
+        return bool(self._acc_state & state)
 
     def _find_windows_by_same_proc(self):
         """
@@ -276,23 +276,23 @@ class WinElement(IElement):
 
     @property
     def is_selected(self):
-        return self.check_state(self.StateFlag.SYSTEM_SELECTED)
+        return self._check_state(self.StateFlag.SYSTEM_SELECTED)
 
     @property
     def is_pressed(self):
-        return self.check_state(self.StateFlag.SYSTEM_PRESSED)
+        return self._check_state(self.StateFlag.SYSTEM_PRESSED)
 
     @property
     def is_checked(self):
-        return self.check_state(self.StateFlag.SYSTEM_CHECKED)
+        return self._check_state(self.StateFlag.SYSTEM_CHECKED)
 
     @property
     def is_visible(self):
-        return not self.check_state(self.StateFlag.SYSTEM_INVISIBLE)
+        return not self._check_state(self.StateFlag.SYSTEM_INVISIBLE)
 
     @property
     def is_enabled(self):
-        return not self.check_state(self.StateFlag.SYSTEM_UNAVAILABLE)
+        return not self._check_state(self.StateFlag.SYSTEM_UNAVAILABLE)
 
     @property
     def acc_parent_count(self):
@@ -414,7 +414,7 @@ class WinElement(IElement):
         return obj_children.value
 
     @property
-    def acc_state(self):
+    def _acc_state(self):
         obj_child_id = comtypes.automation.VARIANT()
         obj_child_id.vt = comtypes.automation.VT_I4
         obj_child_id.value = self.i_object_id

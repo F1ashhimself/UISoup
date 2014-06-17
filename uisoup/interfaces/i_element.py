@@ -89,18 +89,6 @@ class IElement(object):
             - None
         """
 
-    @abstractmethod
-    def check_state(self, state):
-        """
-        Checks object state.
-
-        Arguments:
-            - state: int, state flag.
-
-        Returns:
-            - bool that describes state.
-        """
-
     @abstractproperty
     def proc_id(self):
         """
@@ -242,12 +230,6 @@ class IElement(object):
         """
 
     @abstractproperty
-    def acc_state(self):
-        """
-        Property for element state.
-        """
-
-    @abstractproperty
     def acc_focus(self):
         """
         Property for element in focus.
@@ -290,7 +272,6 @@ class IElement(object):
             - value: string or lambda.
             - description: string or lambda.
             - selection: string or lambda.
-            - state: string or lambda.
             - focus: string or lambda.
             - role_name: string or lambda.
             - parent_count: string or lambda.
@@ -315,7 +296,6 @@ class IElement(object):
             - value: string or lambda.
             - description: string or lambda.
             - selection: string or lambda.
-            - state: string or lambda.
             - focus: string or lambda.
             - role_name: string or lambda.
             - parent_count: string or lambda.
@@ -338,7 +318,6 @@ class IElement(object):
             - value: string or lambda.
             - description: string or lambda.
             - selection: string or lambda.
-            - state: string or lambda.
             - focus: string or lambda.
             - role_name: string or lambda.
             - parent_count: string or lambda.
