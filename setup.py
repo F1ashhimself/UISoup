@@ -14,7 +14,7 @@ def package_env(file_name, strict=False):
 if __name__ == '__main__':
     setup(
         name='UISoup',
-        version='1.3.2',
+        version='2.0',
         description='Library for UI testing.',
         long_description=package_env('README.rst'),
         author='Max Beloborodko',

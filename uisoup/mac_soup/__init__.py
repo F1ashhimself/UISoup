@@ -76,7 +76,8 @@ class MacSoup(ISoup):
         window = filter(lambda x:
                         re.match(regex,
                                  x.get('kCGWindowName', '') +
-                                 x.get('kCGWindowOwnerName', '')),
+                                 x.get('kCGWindowOwnerName', ''),
+                                 re.IGNORECASE),
                         win_list)
 
         if not window:
@@ -92,7 +93,7 @@ class MacSoup(ISoup):
         selector = \
             selector if type(selector) == unicode else selector.decode('utf-8')
 
-        return MacElement(selector, 0, process_id)
+        return MacElement(selector, 0, process_name, process_id)
 
     def get_visible_window_list(self):
         win_list = cg.CGWindowListCopyWindowInfo(
@@ -122,3 +123,10 @@ class MacSoup(ISoup):
             location=lambda x: 0 not in x[2:])
 
         return objects
+
+el = MacSoup().get_window('asd*Yandex')
+s = list(el)
+print el.acc_child_count
+s[0].acc_child_count
+
+1 + 1

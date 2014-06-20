@@ -24,7 +24,6 @@ import comtypes.automation
 import comtypes.client
 from inspect import ismethod
 from types import FunctionType
-import xml.dom.minidom
 
 from .mouse import WinMouse
 from ..utils.win_utils import WinUtils
@@ -191,7 +190,7 @@ class WinElement(IElement):
                 ctypes.byref(i_accessible))
 
         self._i_accessible = i_accessible
-        self.i_object_id = i_object_id
+        self._i_object_id = i_object_id
         self._cache = set()
 
     def click(self, x_offset=0, y_offset=0):
@@ -306,8 +305,8 @@ class WinElement(IElement):
 
     @property
     def acc_child_count(self):
-        if self.i_object_id == 0:
-            return self._i_accessible.accChildCount
+        if self._i_object_id == 0:
+            return self._get_child_count_safely(self._i_accessible)
         else:
             return 0
 
@@ -315,7 +314,7 @@ class WinElement(IElement):
     def acc_role(self):
         obj_child_id = comtypes.automation.VARIANT()
         obj_child_id.vt = comtypes.automation.VT_I4
-        obj_child_id.value = self.i_object_id
+        obj_child_id.value = self._i_object_id
         obj_role = comtypes.automation.VARIANT()
         obj_role.vt = comtypes.automation.VT_BSTR
 
@@ -328,7 +327,7 @@ class WinElement(IElement):
     def acc_name(self):
         obj_child_id = comtypes.automation.VARIANT()
         obj_child_id.vt = comtypes.automation.VT_I4
-        obj_child_id.value = self.i_object_id
+        obj_child_id.value = self._i_object_id
 
         obj_name = comtypes.automation.BSTR()
 
@@ -340,7 +339,7 @@ class WinElement(IElement):
     def set_name(self, name):
         obj_child_id = comtypes.automation.VARIANT()
         obj_child_id.vt = comtypes.automation.VT_I4
-        obj_child_id.value = self.i_object_id
+        obj_child_id.value = self._i_object_id
 
         self._i_accessible._IAccessible__com__set_accName(obj_child_id, name)
 
@@ -355,7 +354,7 @@ class WinElement(IElement):
     def acc_location(self):
         obj_child_id = comtypes.automation.VARIANT()
         obj_child_id.vt = comtypes.automation.VT_I4
-        obj_child_id.value = self.i_object_id
+        obj_child_id.value = self._i_object_id
 
         obj_l, obj_t, obj_w, obj_h = ctypes.c_long(), ctypes.c_long(), \
             ctypes.c_long(), ctypes.c_long()
@@ -372,7 +371,7 @@ class WinElement(IElement):
     def acc_value(self):
         obj_child_id = comtypes.automation.VARIANT()
         obj_child_id.vt = comtypes.automation.VT_I4
-        obj_child_id.value = self.i_object_id
+        obj_child_id.value = self._i_object_id
         obj_bstr_value = comtypes.automation.BSTR()
         self._i_accessible._IAccessible__com__get_accValue(
             obj_child_id, ctypes.byref(obj_bstr_value))
@@ -382,7 +381,7 @@ class WinElement(IElement):
     def set_value(self, value):
         obj_child_id = comtypes.automation.VARIANT()
         obj_child_id.vt = comtypes.automation.VT_I4
-        obj_child_id.value = self.i_object_id
+        obj_child_id.value = self._i_object_id
 
         self._i_accessible._IAccessible__com__set_accValue(obj_child_id, value)
 
@@ -390,7 +389,7 @@ class WinElement(IElement):
     def acc_description(self):
         obj_child_id = comtypes.automation.VARIANT()
         obj_child_id.vt = comtypes.automation.VT_I4
-        obj_child_id.value = self.i_object_id
+        obj_child_id.value = self._i_object_id
         obj_description = comtypes.automation.BSTR()
         self._i_accessible._IAccessible__com__get_accDescription(
             obj_child_id, ctypes.byref(obj_description))
@@ -401,7 +400,8 @@ class WinElement(IElement):
     def acc_parent(self):
         result = None
         if self._i_accessible.accParent:
-            result = WinElement(self._i_accessible.accParent, self.i_object_id)
+            result = \
+                WinElement(self._i_accessible.accParent, self._i_object_id)
 
         return result
 
@@ -417,7 +417,7 @@ class WinElement(IElement):
     def _acc_state(self):
         obj_child_id = comtypes.automation.VARIANT()
         obj_child_id.vt = comtypes.automation.VT_I4
-        obj_child_id.value = self.i_object_id
+        obj_child_id.value = self._i_object_id
         obj_state = comtypes.automation.VARIANT()
         self._i_accessible._IAccessible__com__get_accState(
             obj_child_id, ctypes.byref(obj_state))
@@ -428,13 +428,13 @@ class WinElement(IElement):
     def acc_focus(self):
         result = None
         if self._i_accessible.accFocus:
-            result = WinElement(self._i_accessible.accFocus, self.i_object_id)
+            result = WinElement(self._i_accessible.accFocus, self._i_object_id)
 
         return result
 
     def acc_select(self, i_selection):
-        if self.i_object_id:
-            return self._i_accessible.accSelect(i_selection, self.i_object_id)
+        if self._i_object_id:
+            return self._i_accessible.accSelect(i_selection, self._i_object_id)
         else:
             return self._i_accessible.accSelect(i_selection)
 
@@ -443,7 +443,7 @@ class WinElement(IElement):
         return self._acc_role_name_map.get(self.acc_role, 'unknown')
 
     def __iter__(self):
-        if self.i_object_id > 0:
+        if self._i_object_id > 0:
             raise StopIteration()
 
         obj_acc_child_array = (comtypes.automation.VARIANT *
@@ -465,15 +465,6 @@ class WinElement(IElement):
             else:
                 yield WinElement(self._i_accessible, obj_acc_child.value)
 
-    def __str__(self):
-        result = '[Role: %s(0x%X) | Name: %r | Child count: %d]' % \
-                 (self._acc_role_name_map.get(self.acc_role, 'Unknown'),
-                  self.acc_role,
-                  self.acc_name,
-                  self._i_accessible.accChildCount)
-
-        return result
-
     def _match(self, only_visible, **kwargs):
         """
         Match method.
@@ -486,14 +477,9 @@ class WinElement(IElement):
             - c_name: string or lambda.
             - location: string or lambda.
             - value: string or lambda.
-            - default_action: string or lambda.
             - description: string or lambda.
-            - help: string or lambda.
-            - help_topic: string or lambda.
-            - keyboard_shortcut: string or lambda.
             - parent: string or lambda.
             - selection: string or lambda.
-            - state: string or lambda.
             - focus: string or lambda.
             - role_name: string or lambda.
 
@@ -561,10 +547,9 @@ class WinElement(IElement):
             if obj_element._match(only_visible, **kwargs):
                 yield obj_element
 
-            if self._get_child_count_safely(obj_element._i_accessible):
+            if obj_element.acc_child_count:
                 childs = [el for el in list(obj_element) if
                           el._i_accessible != obj_element._i_accessible]
-
                 lst_queue[:0] = childs
 
     def find(self, only_visible=True, **kwargs):
@@ -594,34 +579,6 @@ class WinElement(IElement):
             return True
         except TooSaltyUISoupException:
             return False
-
-    def toxml(self):
-        obj_document = xml.dom.minidom.Document()
-        lst_queue = [(self, obj_document)]
-
-        while lst_queue:
-            obj_element, obj_tree = lst_queue.pop(0)
-            role_name = obj_element.acc_role_name
-            obj_name = obj_element.acc_name
-            str_name = unicode(obj_name) if obj_name else ''
-            str_location = ','.join(str(x) for x in obj_element.acc_location)
-            obj_sub_tree = xml.dom.minidom.Element(role_name)
-            obj_sub_tree.ownerDocument = obj_document
-
-            try:
-                obj_sub_tree.attributes['Name'] = str_name
-            except:
-                obj_sub_tree.attributes['Name'] = \
-                    str_name.encode('unicode-escape')
-
-            obj_sub_tree.attributes['Location'] = str_location
-            obj_tree.appendChild(obj_sub_tree)
-
-            if self._get_child_count_safely(obj_element._i_accessible):
-                for obj_element_child in obj_element:
-                    lst_queue.append((obj_element_child, obj_sub_tree))
-
-        return obj_document.toprettyxml()
 
     def _get_child_count_safely(self, i_accessible):
         """

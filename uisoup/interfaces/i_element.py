@@ -17,6 +17,7 @@
 __author__ = 'f1ashhimself@gmail.com'
 
 from abc import ABCMeta, abstractmethod, abstractproperty
+import xml.dom.minidom
 
 
 class IElement(object):
@@ -327,7 +328,6 @@ class IElement(object):
             - True if object exists otherwise False.
         """
 
-    @abstractmethod
     def toxml(self):
         """
         Convert Element Tree to XML.
@@ -338,3 +338,39 @@ class IElement(object):
         Returns:
             - None
         """
+
+        obj_document = xml.dom.minidom.Document()
+        lst_queue = [(self, obj_document)]
+
+        while lst_queue:
+            obj_element, obj_tree = lst_queue.pop(0)
+            role_name = obj_element.acc_role_name
+            obj_name = obj_element.acc_name
+            str_name = unicode(obj_name) if obj_name else ''
+            str_location = ','.join(str(x) for x in obj_element.acc_location)
+            obj_sub_tree = xml.dom.minidom.Element(role_name)
+            obj_sub_tree.ownerDocument = obj_document
+
+            try:
+                obj_sub_tree.attributes['Name'] = str_name
+            except:
+                obj_sub_tree.attributes['Name'] = \
+                    str_name.encode('unicode-escape')
+
+            obj_sub_tree.attributes['Location'] = str_location
+            obj_tree.appendChild(obj_sub_tree)
+
+            if obj_element.acc_child_count:
+                for obj_element_child in obj_element:
+                    lst_queue.append((obj_element_child, obj_sub_tree))
+
+        return obj_document.toprettyxml()
+
+    def __str__(self):
+        result = '[Role: %s(0x%X) | Name: %r | Child count: %d]' % \
+                 (self.acc_role_name,
+                  self.acc_role,
+                  self.acc_name,
+                  self.acc_child_count)
+
+        return result

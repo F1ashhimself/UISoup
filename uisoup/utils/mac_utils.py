@@ -19,11 +19,136 @@ __author__ = 'f1ashhimself@gmail.com'
 
 
 import struct
-from Foundation import NSAppleScript
+from AppKit import NSAppleScript
 from Carbon import AppleEvents
 
 from ..utils import _Utils
 from .. import TooSaltyUISoupException
+
+
+class AppleEventDescriptor(object):
+
+    @classmethod
+    def _get_aeKeyword(cls, four_char_code):
+        """
+        Gets aeKeyword from four character event code.
+
+        Arguments:
+            - four_char_code: str, four character event code.
+
+        Return:
+            - integer aeKeyword.
+        """
+
+        return struct.unpack('>I', four_char_code)[0]
+
+    @classmethod
+    def _get_four_char_code(cls, ae_keyword):
+        """
+        Gets four char event code from aeKeyword.
+
+        Arguments:
+            - ae_keyword: integer, aeKeyword.
+
+        Return:
+            - string four char code.
+        """
+
+        return struct.pack('>I', ae_keyword)
+
+    def __init__(self, event_descriptor):
+        """
+        Constructor.
+
+        Arguments:
+            - event_descriptor: NSAppleEventDescriptor, instance.
+        """
+
+        self._event_descriptor = event_descriptor
+
+    def __iter__(self):
+        """Iterate all nested Element"""
+
+        if not self.class_name:
+            i = 1
+            while self._event_descriptor.descriptorAtIndex_(i):
+                yield AppleEventDescriptor(
+                    self._event_descriptor.descriptorAtIndex_(i))
+                i += 1
+
+        raise StopIteration()
+
+    @property
+    def class_name(self):
+        """
+        Property for element class.
+        """
+
+        result = None
+
+        if self._event_descriptor.typeCodeValue():
+            ae_keyword = \
+                self._event_descriptor.descriptorForKeyword_(
+                    self._get_aeKeyword(
+                        AppleEvents.keyAEDesiredClass))
+            if ae_keyword:
+                result = \
+                    self._get_four_char_code(int(ae_keyword.typeCodeValue()))
+
+        return result
+
+    @property
+    def seld_(self):
+        """
+        Property for "seld" field.
+        """
+
+        seld_ = self._event_descriptor.descriptorForKeyword_(
+            self._get_aeKeyword(AppleEvents.keyAEKeyData))
+
+        result = AppleEventDescriptor(seld_) if seld_ else None
+
+        return result
+
+    @property
+    def from_(self):
+        """
+        Property for "from" field.
+        """
+
+        from_ = self._event_descriptor.descriptorForKeyword_(
+            self._get_aeKeyword(AppleEvents.keyOriginalAddressAttr))
+
+        result = AppleEventDescriptor(from_) if from_ else None
+
+        return result
+
+    @property
+    def string_value(self):
+        """
+        Property for string value.
+        """
+
+        return self._event_descriptor.stringValue()
+
+    @property
+    def applescript_specifier(self):
+        """
+        Property for applescript specifier.
+        """
+
+        class_id = self.seld_.string_value
+        class_id = u'"%s"' % class_id if \
+            self.class_name in [AppleEvents.cWindow, 'pcap'] else class_id
+        specifier = u'«class %s» %s' % (self.class_name, class_id)
+
+        if self.from_.class_name:
+            specifier = '%s of %s' % (specifier,
+                                      self.from_.applescript_specifier)
+        else:
+            specifier = '%s of application "System Events"' % specifier
+
+        return specifier
 
 
 class MacUtils(_Utils):
@@ -31,7 +156,7 @@ class MacUtils(_Utils):
     @classmethod
     def execute_applescript_command(cls, cmd):
         """
-        Executes command via osascript.
+        Executes applescript command.
 
         Arguments:
             - cmd: string or list, command or commands that should be
@@ -44,51 +169,16 @@ class MacUtils(_Utils):
         cmd = '\n'.join([cmd] if isinstance(cmd, basestring) else cmd)
 
         script = NSAppleScript.alloc().initWithSource_(cmd)
-        result = script.executeAndReturnError_(None)[0]
+        result = script.executeAndReturnError_(None)
 
-        if not result:
+        if not result[0]:
             raise TooSaltyUISoupException(
-                'Error when executing applescript command.')
+                'Error when executing applescript command: %s' %
+                result[1]['NSAppleScriptErrorMessage'])
 
-        return result
+        return result[0]
 
     class ApplescriptExecutor(object):
-
-        @classmethod
-        def _get_aeKeyword(cls, four_char_code):
-            """
-            Gets aeKeyword from four character event code.
-
-            Arguments:
-                - four_char_code: str, four character event code.
-
-            Return:
-                - integer aeKeyword.
-            """
-
-            return struct.unpack('>I', four_char_code)[0]
-
-        @classmethod
-        def _parse_single_selector(cls, event_descriptor):
-            """
-            Parses single selector from NSAppleEventDescriptor.
-
-            Arguments:
-                - event_descriptor: NSAppleEventDescriptor, instance.
-
-            Returns:
-                - tuple with window name, process name.
-            """
-
-            seld_ = cls._get_aeKeyword(AppleEvents.keyAEKeyData)
-            from_ = \
-                cls._get_aeKeyword(AppleEvents.keyOriginalAddressAttr)
-            window_name = \
-                event_descriptor.descriptorForKeyword_(seld_).stringValue()
-            process_name = event_descriptor.descriptorForKeyword_(from_)\
-                .descriptorForKeyword_(seld_).stringValue()
-
-            return window_name, process_name
 
         @classmethod
         def get_frontmost_window_name(cls):
@@ -106,10 +196,11 @@ class MacUtils(_Utils):
                    '  return (1st window whose value of attribute "AXMain" is true)',
                    'end tell']
 
-            event_descriptor = MacUtils.execute_applescript_command(cmd)
-            window_name, process_name = cls._parse_single_selector(event_descriptor)
+            event_descriptor = \
+                AppleEventDescriptor(MacUtils.execute_applescript_command(cmd))
 
-            return window_name + process_name
+            return event_descriptor.seld_.string_value + \
+                event_descriptor.from_.seld_.string_value
 
         @classmethod
         def get_front_window_element(cls, process_name):
@@ -128,33 +219,33 @@ class MacUtils(_Utils):
                    '  return front window',
                    'end tell']
 
-            event_descriptor = MacUtils.execute_applescript_command(cmd)
-            window_name, process_name = \
-                cls._parse_single_selector(event_descriptor)
+            event_descriptor = \
+                AppleEventDescriptor(MacUtils.execute_applescript_command(cmd))
 
-            result = 'window "%s" of application process "%s" of ' \
-                     'application "System Events"' % (window_name,
-                                                      process_name)
-
-            return result
+            return event_descriptor.applescript_specifier
 
         @classmethod
-        def get_element_by_selector(cls, process_name, selector):
+        def get_apple_event_descriptor(cls, obj_selector, process_name):
             """
-            Gets element by given process name.
+            Gets apple event descriptor.
 
             Arguments:
+                - obj_selector: string, object selector.
                 - process_name: string, name of process.
-                - selector: string, selector of element.
 
             Returns:
-                - List with Applescript commands.
+                - instance of AppleEventDescriptor.
             """
 
-            return ['tell application "System Events" to tell process "%s"' % process_name,
-                    '  set visible to true',
-                    '  %s of application "System Events"' % selector,
-                    'end tell']
+            cmd = ['tell application "System Events" to tell process "%s"'% process_name,
+                   '  set visible to true',
+                   '  return %s' % obj_selector,
+                   'end tell']
+
+            event_descriptor = \
+                AppleEventDescriptor(MacUtils.execute_applescript_command(cmd))
+
+            return event_descriptor
 
         @classmethod
         def get_children_elements(cls, obj_selector, layer_num, process_name):
@@ -163,25 +254,38 @@ class MacUtils(_Utils):
 
             Arguments:
                 - obj_selector: string, object selector.
-                - layer_num: int, layer number. I.e. main window will be layer 0.
+                - layer_num: int, layer number.
+                I.e. main window will be layer 0.
                 - process_name: string, name of process.
 
             Returns:
-                - List with Applescript commands.
+                - Tuple that contains list with element selectors and
+                elements layer number.
             """
 
-            return ['tell application "System Events" to tell process "%s"' % process_name,
-                    '  set visible to true',
-                    '  set uiElement to %s' % obj_selector,
-                    '  set layer to %s' % layer_num,
-                    '  if uiElement = null then',
-                    '    set layer to 0',
-                    '    set collectedElements to {UI elements of front window, layer}',
-                    '  else',
-                    '    set layer to layer + 1',
-                    '    if name of attributes of uiElement contains "AXChildren" then',
-                    '        set collectedElements to {value of attribute "AXChildren" of uiElement, layer}',
-                    '    end if',
-                    '  end if',
-                    'end tell',
-                    'return collectedElements']
+            cmd = ['tell application "System Events" to tell process "%s"' % process_name,
+                   '  set visible to true',
+                   '  set uiElement to %s' % obj_selector,
+                   '  set layer to %s' % layer_num,
+                   '  if uiElement = null then',
+                   '    set layer to 0',
+                   '    set collectedElements to {UI elements of front window, layer}',
+                   '  else',
+                   '    set layer to layer + 1',
+                   '    set collectedElements to {null, layer}',
+                   '    if name of attributes of uiElement contains "AXChildren" then',
+                   '        set collectedElements to {value of attribute "AXChildren" of uiElement, layer}',
+                   '    end if',
+                   '  end if',
+                   'end tell',
+                   'return collectedElements']
+
+            event_descriptors_list = \
+                list(AppleEventDescriptor(
+                    MacUtils.execute_applescript_command(cmd)))
+
+            result = ([el.applescript_specifier for el in
+                       list(event_descriptors_list[0])],
+                      int(event_descriptors_list[1].string_value))
+
+            return result
