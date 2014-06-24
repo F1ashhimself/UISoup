@@ -22,11 +22,10 @@ import re
 
 from Quartz import CoreGraphics as cg
 
-# TODO: change to relative import.
-from uisoup.interfaces.i_soup import ISoup
-from uisoup.utils.mac_utils import MacUtils
-from uisoup.mac_soup.element import MacElement
-from uisoup import TooSaltyUISoupException
+from ..interfaces.i_soup import ISoup
+from ..utils.mac_utils import MacUtils
+from .element import MacElement
+from .. import TooSaltyUISoupException
 
 
 class MacSoup(ISoup):
@@ -123,10 +122,3 @@ class MacSoup(ISoup):
             location=lambda x: 0 not in x[2:])
 
         return objects
-
-el = MacSoup().get_window('asd*Yandex')
-s = list(el)
-print el.acc_child_count
-s[0].acc_child_count
-
-1 + 1

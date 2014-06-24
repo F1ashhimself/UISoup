@@ -16,17 +16,13 @@
 
 __author__ = 'f1ashhimself@gmail.com'
 
-import re
 import ctypes
 import ctypes.wintypes
 import comtypes
 import comtypes.automation
 import comtypes.client
-from inspect import ismethod
-from types import FunctionType
 
 from .mouse import WinMouse
-from ..utils.win_utils import WinUtils
 from ..interfaces.i_element import IElement
 from .. import TooSaltyUISoupException
 
@@ -193,35 +189,17 @@ class WinElement(IElement):
         self._i_object_id = i_object_id
         self._cache = set()
 
-    def click(self, x_offset=0, y_offset=0):
-        x, y, w, h = self.acc_location
-        x += x_offset if x_offset is not None else w / 2
-        y += y_offset if y_offset is not None else h / 2
-
-        self._mouse.click(x, y)
-
-    def right_click(self, x_offset=0, y_offset=0):
-        x, y, w, h = self.acc_location
-        x += x_offset if x_offset is not None else w / 2
-        y += y_offset if y_offset is not None else h / 2
-
-        self._mouse.click(x, y, self._mouse.RIGHT_BUTTON)
-
-    def double_click(self, x_offset=0, y_offset=0):
-        x, y, w, h = self.acc_location
-        x += x_offset if x_offset is not None else w / 2
-        y += y_offset if y_offset is not None else h / 2
-
-        self._mouse.double_click(x, y)
-
-    def drag_to(self, x, y, x_offset=None, y_offset=None, smooth=True):
-        el_x, el_y, el_w, el_h = self.acc_location
-        el_x += x_offset if x_offset is not None else el_w / 2
-        el_y += y_offset if y_offset is not None else el_h / 2
-
-        self._mouse.drag(el_x, el_y, x, y, smooth)
-
     def _check_state(self, state):
+        """
+        Checks state.
+
+        Arguments:
+            - state: int, state flag.
+
+        Returns:
+            - Bool flag indicator.
+        """
+
         return bool(self._acc_state & state)
 
     def _find_windows_by_same_proc(self):
@@ -253,11 +231,60 @@ class WinElement(IElement):
 
     @property
     def _hwnd(self):
+        """
+        Property for window handler.
+        """
+
         hwnd = ctypes.c_int()
         ctypes.oledll.oleacc.WindowFromAccessibleObject(self._i_accessible,
                                                         ctypes.byref(hwnd))
 
         return hwnd.value
+
+    @property
+    def _role(self):
+        """
+        Property for element role.
+        """
+
+        obj_child_id = comtypes.automation.VARIANT()
+        obj_child_id.vt = comtypes.automation.VT_I4
+        obj_child_id.value = self._i_object_id
+        obj_role = comtypes.automation.VARIANT()
+        obj_role.vt = comtypes.automation.VT_BSTR
+
+        self._i_accessible._IAccessible__com__get_accRole(obj_child_id,
+                                                          obj_role)
+
+        return obj_role.value
+
+    def click(self, x_offset=0, y_offset=0):
+        x, y, w, h = self.acc_location
+        x += x_offset if x_offset is not None else w / 2
+        y += y_offset if y_offset is not None else h / 2
+
+        self._mouse.click(x, y)
+
+    def right_click(self, x_offset=0, y_offset=0):
+        x, y, w, h = self.acc_location
+        x += x_offset if x_offset is not None else w / 2
+        y += y_offset if y_offset is not None else h / 2
+
+        self._mouse.click(x, y, self._mouse.RIGHT_BUTTON)
+
+    def double_click(self, x_offset=0, y_offset=0):
+        x, y, w, h = self.acc_location
+        x += x_offset if x_offset is not None else w / 2
+        y += y_offset if y_offset is not None else h / 2
+
+        self._mouse.double_click(x, y)
+
+    def drag_to(self, x, y, x_offset=None, y_offset=None, smooth=True):
+        el_x, el_y, el_w, el_h = self.acc_location
+        el_x += x_offset if x_offset is not None else el_w / 2
+        el_y += y_offset if y_offset is not None else el_h / 2
+
+        self._mouse.drag(el_x, el_y, x, y, smooth)
 
     @property
     def proc_id(self):
@@ -276,10 +303,6 @@ class WinElement(IElement):
     @property
     def is_selected(self):
         return self._check_state(self.StateFlag.SYSTEM_SELECTED)
-
-    @property
-    def is_pressed(self):
-        return self._check_state(self.StateFlag.SYSTEM_PRESSED)
 
     @property
     def is_checked(self):
@@ -311,19 +334,6 @@ class WinElement(IElement):
             return 0
 
     @property
-    def acc_role(self):
-        obj_child_id = comtypes.automation.VARIANT()
-        obj_child_id.vt = comtypes.automation.VT_I4
-        obj_child_id.value = self._i_object_id
-        obj_role = comtypes.automation.VARIANT()
-        obj_role.vt = comtypes.automation.VT_BSTR
-
-        self._i_accessible._IAccessible__com__get_accRole(obj_child_id,
-                                                          obj_role)
-
-        return obj_role.value
-
-    @property
     def acc_name(self):
         obj_child_id = comtypes.automation.VARIANT()
         obj_child_id.vt = comtypes.automation.VT_I4
@@ -335,13 +345,6 @@ class WinElement(IElement):
             obj_child_id, ctypes.byref(obj_name))
 
         return obj_name.value
-
-    def set_name(self, name):
-        obj_child_id = comtypes.automation.VARIANT()
-        obj_child_id.vt = comtypes.automation.VT_I4
-        obj_child_id.value = self._i_object_id
-
-        self._i_accessible._IAccessible__com__set_accName(obj_child_id, name)
 
     def set_focus(self):
         self.acc_select(self.SelectionFlag.TAKEFOCUS)
@@ -425,22 +428,16 @@ class WinElement(IElement):
         return obj_state.value
 
     @property
-    def acc_focus(self):
+    def acc_focused_element(self):
         result = None
         if self._i_accessible.accFocus:
             result = WinElement(self._i_accessible.accFocus, self._i_object_id)
 
         return result
 
-    def acc_select(self, i_selection):
-        if self._i_object_id:
-            return self._i_accessible.accSelect(i_selection, self._i_object_id)
-        else:
-            return self._i_accessible.accSelect(i_selection)
-
     @property
     def acc_role_name(self):
-        return self._acc_role_name_map.get(self.acc_role, 'unknown')
+        return self._acc_role_name_map.get(self._role, 'unknown')
 
     def __iter__(self):
         if self._i_object_id > 0:
@@ -464,50 +461,6 @@ class WinElement(IElement):
                     comtypes.gen.Accessibility.IAccessible), 0)
             else:
                 yield WinElement(self._i_accessible, obj_acc_child.value)
-
-    def _match(self, only_visible, **kwargs):
-        """
-        Match method.
-
-        Arguments:
-            - only_visible: bool, flag that indicates will we search only
-            through visible elements.
-            - role: string or lambda e.g. lambda x: x == 13
-            - name: string or lambda.
-            - c_name: string or lambda.
-            - location: string or lambda.
-            - value: string or lambda.
-            - description: string or lambda.
-            - parent: string or lambda.
-            - selection: string or lambda.
-            - focus: string or lambda.
-            - role_name: string or lambda.
-
-        Returns:
-            - True if element was matched otherwise False.
-        """
-
-        try:
-            if only_visible and not self.is_visible:
-                return False
-
-            for str_property in kwargs:
-                attr = getattr(self, 'acc_' + str_property)
-                if ismethod(attr):
-                    attr = attr()
-
-                expected_result = kwargs[str_property]
-                if type(expected_result) is FunctionType:
-                    if not expected_result(attr):
-                        return False
-                else:
-                    regex = WinUtils.convert_wildcard_to_regex(expected_result)
-                    if not re.match(regex, attr):
-                        return False
-        except:
-            return False
-        else:
-            return True
 
     def __findcacheiter(self, only_visible, **kwargs):
         """

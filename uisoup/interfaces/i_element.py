@@ -16,8 +16,13 @@
 
 __author__ = 'f1ashhimself@gmail.com'
 
+import re
+from inspect import ismethod
+from types import FunctionType
 from abc import ABCMeta, abstractmethod, abstractproperty
 import xml.dom.minidom
+
+from ..utils import _Utils
 
 
 class IElement(object):
@@ -109,12 +114,6 @@ class IElement(object):
         """
 
     @abstractproperty
-    def is_pressed(self):
-        """
-        Indicates pressed state.
-        """
-
-    @abstractproperty
     def is_checked(self):
         """
         Indicates checked state.
@@ -145,28 +144,10 @@ class IElement(object):
         """
 
     @abstractproperty
-    def acc_role(self):
-        """
-        Property for element role.
-        """
-
-    @abstractproperty
     def acc_name(self):
         """
         Property for element name.
         Also need to specify setter for this property
-        """
-
-    @abstractmethod
-    def set_name(self, name):
-        """
-        Sets element name.
-
-        Arguments:
-            - name: string, element name.
-
-        Returns:
-            - None
         """
 
     @abstractmethod
@@ -231,21 +212,9 @@ class IElement(object):
         """
 
     @abstractproperty
-    def acc_focus(self):
+    def acc_focused_element(self):
         """
         Property for element in focus.
-        """
-
-    @abstractmethod
-    def acc_select(self, i_selection):
-        """
-        Does default action for element.
-
-        Arguments:
-            - None
-
-        Returns:
-            - None
         """
 
     @abstractproperty
@@ -273,7 +242,6 @@ class IElement(object):
             - value: string or lambda.
             - description: string or lambda.
             - selection: string or lambda.
-            - focus: string or lambda.
             - role_name: string or lambda.
             - parent_count: string or lambda.
             - child_count: string or lambda.
@@ -297,7 +265,6 @@ class IElement(object):
             - value: string or lambda.
             - description: string or lambda.
             - selection: string or lambda.
-            - focus: string or lambda.
             - role_name: string or lambda.
             - parent_count: string or lambda.
             - child_count: string or lambda.
@@ -319,7 +286,6 @@ class IElement(object):
             - value: string or lambda.
             - description: string or lambda.
             - selection: string or lambda.
-            - focus: string or lambda.
             - role_name: string or lambda.
             - parent_count: string or lambda.
             - child_count: string or lambda.
@@ -374,3 +340,45 @@ class IElement(object):
                   self.acc_child_count)
 
         return result
+
+    def _match(self, only_visible, **kwargs):
+        """
+        Match method.
+
+        Arguments:
+            - only_visible: bool, flag that indicates will we search only
+            through visible elements.
+            - role: string or lambda e.g. lambda x: x == 13
+            - name: string or lambda.
+            - c_name: string or lambda.
+            - location: string or lambda.
+            - value: string or lambda.
+            - description: string or lambda.
+            - parent: string or lambda.
+            - selection: string or lambda.
+            - role_name: string or lambda.
+
+        Returns:
+            - True if element was matched otherwise False.
+        """
+
+        try:
+            if only_visible and not self.is_visible:
+                return False
+
+            for str_property, expected_result in kwargs.items():
+                attr = getattr(self, 'acc_' + str_property)
+                if ismethod(attr):
+                    attr = attr()
+
+                if type(expected_result) is FunctionType:
+                    if not expected_result(attr):
+                        return False
+                else:
+                    regex = _Utils.convert_wildcard_to_regex(expected_result)
+                    if not re.match(regex, attr):
+                        return False
+        except:
+            return False
+        else:
+            return True

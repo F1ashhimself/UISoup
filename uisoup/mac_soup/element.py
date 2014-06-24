@@ -75,6 +75,25 @@ class MacElement(IElement):
         self._proc_name = process_name
         self._cache = set()
 
+    @property
+    def _properties(self):
+        """
+        Property for element properties.
+        """
+
+        properties = MacUtils.ApplescriptExecutor.get_element_properties(
+            self._object_selector, self._proc_name)
+
+        return properties
+
+    @property
+    def _role(self):
+        """
+        Property for element role.
+        """
+
+        return self._properties.get('AXRole', None)
+
     def click(self, x_offset=None, y_offset=None):
         pass
 
@@ -97,23 +116,29 @@ class MacElement(IElement):
 
     @property
     def is_selected(self):
-        pass
+        result = False
+        if self.acc_role_name == self._acc_role_name_map['AXRadioButton'] and \
+                self._properties.get('AXValue', 'false') == 'true':
+            result = True
 
-    @property
-    def is_pressed(self):
-        pass
+        return result
 
     @property
     def is_checked(self):
-        pass
+        result = False
+        if self.acc_role_name == self._acc_role_name_map['AXCheckBox'] and \
+                self._properties.get('AXValue', 'false') == 'true':
+            result = True
+
+        return result
 
     @property
     def is_visible(self):
-        pass
+        return True  # We can't work with invisible elements under Mac OS.
 
     @property
     def is_enabled(self):
-        pass
+        return bool(self._properties.get('AXEnabled', False))
 
     @property
     def acc_parent_count(self):
@@ -127,20 +152,13 @@ class MacElement(IElement):
         return len(children_elements[0])
 
     @property
-    def acc_role(self):
-        pass
-
-    @property
     def acc_name(self):
-        pass
-
-    @property
-    def set_name(self, name):
-        pass
+        return self._properties.get('AXDescription', None)
 
     @property
     def set_focus(self):
-        pass
+        MacUtils.ApplescriptExecutor.set_element_attribute_value(
+            self._object_selector, 'AXFocused', 'true', self._proc_name, False)
 
     @property
     def acc_c_name(self):
@@ -148,19 +166,23 @@ class MacElement(IElement):
 
     @property
     def acc_location(self):
-        pass
+        x, y = self._properties['AXPosition']
+        w, h = self._properties['AXSize']
+
+        return map(int, [x, y, w, h])
 
     @property
     def acc_value(self):
-        pass
+        return self._properties.get('AXValue', None)
 
     @property
     def set_value(self, value):
-        pass
+        MacUtils.ApplescriptExecutor.set_element_attribute_value(
+            self._object_selector, 'AXValue', value, self._proc_name)
 
     @property
     def acc_description(self):
-        pass
+        return self.acc_name
 
     @property
     def acc_parent(self):
@@ -179,18 +201,23 @@ class MacElement(IElement):
 
     @property
     def acc_selection(self):
-        pass
+        return self._properties.get('AXSelectedText', None)
 
     @property
-    def acc_focus(self):
-        pass
+    def acc_focused_element(self):
+        childs = self.findall()
+
+        result = None
+        for element in childs:
+            if self._properties.get('AXFocused', 'false') == 'true':
+                result = element
+                break
+
+        return result
 
     @property
-    def acc_select(self, i_selection):
-        pass
-
     def acc_role_name(self):
-        pass
+        return self._acc_role_name_map.get(self._role, 'unknown')
 
     def __iter__(self):
         children_elements = MacUtils.ApplescriptExecutor.get_children_elements(

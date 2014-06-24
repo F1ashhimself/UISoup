@@ -42,7 +42,7 @@ class UIInspector(object):
         dict_info = {}
         dict_info['child_id'] = obj_element.i_object_id
         lst_attribute_name_list = ['acc_role_name',
-                                   'acc_role',
+                                   '_role',
                                    'acc_name',
                                    'acc_value',
                                    'acc_location',

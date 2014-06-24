@@ -67,7 +67,7 @@ class AppleEventDescriptor(object):
         self._event_descriptor = event_descriptor
 
     def __iter__(self):
-        """Iterate all nested Element"""
+        """Iterate all nested elements"""
 
         if not self.class_name:
             i = 1
@@ -138,7 +138,7 @@ class AppleEventDescriptor(object):
         """
 
         class_id = self.seld_.string_value
-        class_id = u'"%s"' % class_id if \
+        class_id = u'"%s"' % class_id if not class_id.isdigit() or \
             self.class_name in [AppleEvents.cWindow, 'pcap'] else class_id
         specifier = u'«class %s» %s' % (self.class_name, class_id)
 
@@ -287,5 +287,74 @@ class MacUtils(_Utils):
             result = ([el.applescript_specifier for el in
                        list(event_descriptors_list[0])],
                       int(event_descriptors_list[1].string_value))
+
+            return result
+
+        @classmethod
+        def get_element_properties(cls, obj_selector, process_name):
+            """
+            Gets all element properties.
+
+            Arguments:
+                - obj_selector: string, object selector.
+                - process_name: string, name of process.
+
+            Returns:
+                - Dict with element properties.
+            """
+
+            cmd = ['tell application "System Events" to tell application process "%s"' % process_name,
+                   '  set visible to true',
+                   '  set res to {}',
+                   '  repeat with attr in attributes of %s' % obj_selector,
+                   '    set res to res & {{name of attr, value of attr}}',
+                   '  end repeat',
+                   '  return res',
+                   'end tell']
+
+            event_descriptors_list = list(AppleEventDescriptor(
+                MacUtils.execute_applescript_command(cmd)))
+
+            # Unpacking properties to dict.
+            el_properties = dict()
+            for prop in event_descriptors_list:
+                prop = list(prop)
+                prop_name = prop[0].string_value
+                prop_value = [e.string_value for e in list(prop[1])] if \
+                    list(prop[1]) else prop[1].string_value
+
+                el_properties[prop_name] = prop_value
+
+            return el_properties
+
+        @classmethod
+        def set_element_attribute_value(cls, obj_selector, attribute_name,
+                                        value, process_name,
+                                        string_value=True):
+            """
+            Gets all element properties.
+
+            Arguments:
+                - obj_selector: string, object selector.
+                - attribute_name: string, name of attribute:
+                - value: string, value.
+                - process_name: string, name of process.
+                - string_value: bool, indicates will be value wrapped in
+                brackets.
+
+            Returns:
+                - Boolean indicator whether was operation successful or not.
+            """
+
+            value = '"%s"' % value if string_value else value
+            cmd = ['tell application "System Events" to tell application process "%s"' % process_name,
+                   '  set value of attribute "%s" of %s to %s' % (attribute_name, obj_selector, value),
+                   'end tell']
+
+            try:
+                MacUtils.execute_applescript_command(cmd)
+                result = True
+            except TooSaltyUISoupException:
+                result = False
 
             return result
