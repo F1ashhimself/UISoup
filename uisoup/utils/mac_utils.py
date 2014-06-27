@@ -219,28 +219,6 @@ class MacUtils(_Utils):
                 event_descriptor.from_.seld_.string_value
 
         @classmethod
-        def get_front_window_element(cls, process_name):
-            """
-            Gets front window element by given process name.
-
-            Arguments:
-                - process_name: string, name of process.
-
-            Returns:
-                - string with element selector.
-            """
-
-            cmd = ['tell application "System Events" to tell process "%s"' % process_name,
-                   '  set visible to true',
-                   '  return front window',
-                   'end tell']
-
-            event_descriptor = \
-                AppleEventDescriptor(MacUtils.execute_applescript_command(cmd))
-
-            return event_descriptor.applescript_specifier
-
-        @classmethod
         def get_apple_event_descriptor(cls, obj_selector, process_name):
             """
             Gets apple event descriptor.

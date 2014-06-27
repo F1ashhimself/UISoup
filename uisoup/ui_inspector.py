@@ -82,8 +82,10 @@ def main():
                 obj_element = uisoup.get_object_by_coordinates(x, y)
                 clear_command = \
                     'cls' if platform_system == 'Windows' else 'clear'
+                printable_data = \
+                    UIInspector.get_current_element_info(obj_element)
                 system(clear_command)
-                print UIInspector.get_current_element_info(obj_element)
+                print printable_data
             sleep(0.5)
     except KeyboardInterrupt:
         system('cls')

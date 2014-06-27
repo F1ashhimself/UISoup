@@ -93,9 +93,12 @@ class MacSoup(ISoup):
                                           obj_name)
         window = window[0]
         process_name = window['kCGWindowOwnerName']
+        window_name = window['kCGWindowName']
         process_id = int(window['kCGWindowOwnerPID'])
         selector = \
-            MacUtils.ApplescriptExecutor.get_front_window_element(process_name)
+            MacUtils.ApplescriptExecutor.get_apple_event_descriptor(
+                'window "%s"' % window_name,
+                process_name).applescript_specifier
         selector = \
             selector if type(selector) == unicode else selector.decode('utf-8')
 
