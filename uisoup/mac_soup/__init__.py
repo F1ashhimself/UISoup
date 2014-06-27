@@ -84,15 +84,17 @@ class MacSoup(ISoup):
                                  MacUtils.replace_inappropriate_symbols(
                                      x.get('kCGWindowName', '')) +
                                  x.get('kCGWindowOwnerName', ''),
-                                 re.IGNORECASE),
+                                 re.IGNORECASE)
+                        if x.get('kCGWindowName', '') else False,
                         win_list)
 
+        window = window[0] if window else window
         if not window:
             obj_name = obj_name.encode(self._default_sys_encoding,
                                        errors='ignore')
             raise TooSaltyUISoupException('Can\'t find window "%s".' %
                                           obj_name)
-        window = window[0]
+
         process_name = window['kCGWindowOwnerName']
         window_name = window['kCGWindowName']
         process_id = int(window['kCGWindowOwnerPID'])
