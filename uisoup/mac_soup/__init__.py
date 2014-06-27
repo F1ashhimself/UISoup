@@ -81,7 +81,8 @@ class MacSoup(ISoup):
 
         window = filter(lambda x:
                         re.match(regex,
-                                 x.get('kCGWindowName', '') +
+                                 MacUtils.replace_inappropriate_symbols(
+                                     x.get('kCGWindowName', '')) +
                                  x.get('kCGWindowOwnerName', ''),
                                  re.IGNORECASE),
                         win_list)

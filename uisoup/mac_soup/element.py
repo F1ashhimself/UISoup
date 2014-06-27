@@ -175,8 +175,10 @@ class MacElement(IElement):
 
     @property
     def acc_name(self):
-        return self._properties.get('AXDescription', None) or \
+        result = self._properties.get('AXDescription', None) or \
             self._properties.get('AXTitle', None) or self._class_id
+
+        return MacUtils.replace_inappropriate_symbols(result)
 
     @property
     def set_focus(self):

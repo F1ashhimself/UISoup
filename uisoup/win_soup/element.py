@@ -24,6 +24,7 @@ import comtypes.client
 
 from .mouse import WinMouse
 from ..interfaces.i_element import IElement
+from ..utils.win_utils import WinUtils
 from .. import TooSaltyUISoupException
 
 
@@ -344,7 +345,7 @@ class WinElement(IElement):
         self._i_accessible._IAccessible__com__get_accName(
             obj_child_id, ctypes.byref(obj_name))
 
-        return obj_name.value
+        return WinUtils.replace_inappropriate_symbols(obj_name.value)
 
     def set_focus(self):
         self.acc_select(self.SelectionFlag.TAKEFOCUS)

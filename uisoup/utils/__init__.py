@@ -38,3 +38,24 @@ class _Utils(object):
         regex = regex.replace(r'\*', r'[\s\S]*')
 
         return '^%s$' % regex
+
+    @classmethod
+    def replace_inappropriate_symbols(cls, text):
+        """
+        Replaces inappropriate symbols e.g. \xa0 (non-breaking space) to
+        normal space.
+
+        Arguments:
+            - text: string, text in which symbols should be replaced.
+            Should be in unicode.
+
+        Returns:
+            - string with processed text.
+        """
+
+        replace_pairs = [(u'\xa0', ' '), ]
+
+        for from_, to_ in replace_pairs:
+            text = text.replace(from_, to_)
+
+        return text

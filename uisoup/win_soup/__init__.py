@@ -54,7 +54,7 @@ class WinSoup(ISoup):
             length = ctypes.windll.user32.GetWindowTextLengthW(handle) + 1
             buff = ctypes.create_unicode_buffer(length)
             ctypes.windll.user32.GetWindowTextW(handle, buff, length)
-            win_text = buff.value
+            win_text = WinUtils.replace_inappropriate_symbols(buff.value)
 
             if re.match(wildcard, win_text):
                 cls.last_handle = handle
