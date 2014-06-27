@@ -20,36 +20,43 @@ __author__ = 'f1ashhimself@gmail.com'
 import sys
 import re
 
-from Quartz import CoreGraphics as cg
+from Quartz import CoreGraphics as CG
 
 from ..interfaces.i_soup import ISoup
 from ..utils.mac_utils import MacUtils
 from .element import MacElement
+from .mouse import MacMouse
+from .keyboard import MacKeyboard
 from .. import TooSaltyUISoupException
 
 
 class MacSoup(ISoup):
 
-    mouse = None  # TODO: add implementation.
-    keyboard = None  # TODO: add implementation.
+    mouse = MacMouse()
+    keyboard = MacKeyboard()
     _default_sys_encoding = sys.stdout.encoding
 
     def get_object_by_coordinates(self, x, y):
-        window_handle = \
-            MacUtils.ApplescriptExecutor.get_frontmost_window_name()
-        window = self.get_window(window_handle)
-
-        # Sorting by layer from big to small.
-        sorted_objects = sorted(window.findall(),
-                                lambda x, y: y._layer_num - x._layer_num)
-
         result = None
-        cur_x, cur_y = self.mouse.get_position()
-        for element in sorted_objects:
-            x, y, w, h = element.acc_location()
-            if x <= cur_x < x + w and y <= cur_y < y + h:
-                result = element
-                break
+
+        try:
+            window_handle = \
+                MacUtils.ApplescriptExecutor.get_frontmost_window_name()
+
+            window = self.get_window(window_handle)
+
+            # Sorting by layer from big to small.
+            sorted_objects = sorted(window.findall(),
+                                    lambda x, y: y._layer_num - x._layer_num)
+
+            cur_x, cur_y = self.mouse.get_position()
+            for element in sorted_objects:
+                x, y, w, h = element.acc_location
+                if x <= cur_x < x + w and y <= cur_y < y + h:
+                    result = element
+                    break
+        except:
+            pass
 
         return result
 
@@ -61,8 +68,8 @@ class MacSoup(ISoup):
             return False
 
     def get_window(self, obj_handle=None):
-        filters = cg.kCGWindowListOptionOnScreenOnly | \
-            cg.kCGWindowListExcludeDesktopElements * bool(obj_handle)
+        filters = CG.kCGWindowListOptionOnScreenOnly | \
+            CG.kCGWindowListExcludeDesktopElements * bool(obj_handle)
 
         obj_name = obj_handle if obj_handle else u'DesktopWindow Server'
         obj_name = \
@@ -70,7 +77,7 @@ class MacSoup(ISoup):
 
         regex = MacUtils.convert_wildcard_to_regex(obj_name)
 
-        win_list = cg.CGWindowListCopyWindowInfo(filters, cg.kCGNullWindowID)
+        win_list = CG.CGWindowListCopyWindowInfo(filters, CG.kCGNullWindowID)
 
         window = filter(lambda x:
                         re.match(regex,
@@ -95,10 +102,10 @@ class MacSoup(ISoup):
         return MacElement(selector, 0, process_name, process_id)
 
     def get_visible_window_list(self):
-        win_list = cg.CGWindowListCopyWindowInfo(
-            cg.kCGWindowListOptionOnScreenOnly |
-            cg.kCGWindowListExcludeDesktopElements,
-            cg.kCGNullWindowID)
+        win_list = CG.CGWindowListCopyWindowInfo(
+            CG.kCGWindowListOptionOnScreenOnly |
+            CG.kCGWindowListExcludeDesktopElements,
+            CG.kCGNullWindowID)
 
         win_names = \
             [w.get('kCGWindowName', '') + w.get('kCGWindowOwnerName', '') for

@@ -22,7 +22,7 @@ from Quartz import CoreGraphics as CG
 from time import sleep
 
 from ..interfaces.i_mouse import IMouse
-from . import TooSaltyUISoupException
+from .. import TooSaltyUISoupException
 
 
 class MacMouse(IMouse):

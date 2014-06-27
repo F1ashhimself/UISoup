@@ -81,7 +81,7 @@ class AppleEventDescriptor(object):
     @property
     def class_name(self):
         """
-        Property for element class.
+        Property for element class name.
         """
 
         result = None
@@ -96,6 +96,14 @@ class AppleEventDescriptor(object):
                     self._get_four_char_code(int(ae_keyword.typeCodeValue()))
 
         return result
+
+    @property
+    def class_id(self):
+        """
+        Property for element class id.
+        """
+
+        return self.seld_.string_value.replace('\\', '\\\\')
 
     @property
     def seld_(self):
@@ -137,14 +145,21 @@ class AppleEventDescriptor(object):
         Property for applescript specifier.
         """
 
-        class_id = self.seld_.string_value
-        class_id = u'"%s"' % class_id if not class_id.isdigit() or \
-            self.class_name in [AppleEvents.cWindow, 'pcap'] else class_id
+        class_id = u'"%s"' % self.class_id if not self.class_id.isdigit() or \
+            self.class_name in [AppleEvents.cWindow, 'pcap'] else self.class_id
         specifier = u'«class %s» %s' % (self.class_name, class_id)
 
         if self.from_.class_name:
+            # Sometimes applescript returns menu bar as a child of
+            # window (cwin) but this is wrong and parent of menu bar should
+            # be application (pcap) so we need to skip one parent (cwin) in
+            # this case.
+            parent_element = self.from_
+            if self.class_name == 'mbar' and\
+                    self.from_.class_name == AppleEvents.cWindow:
+                parent_element = parent_element.from_
             specifier = '%s of %s' % (specifier,
-                                      self.from_.applescript_specifier)
+                                      parent_element.applescript_specifier)
         else:
             specifier = '%s of application "System Events"' % specifier
 
@@ -172,9 +187,10 @@ class MacUtils(_Utils):
         result = script.executeAndReturnError_(None)
 
         if not result[0]:
-            raise TooSaltyUISoupException(
-                'Error when executing applescript command: %s' %
-                result[1]['NSAppleScriptErrorMessage'])
+            error_message = 'Error when executing applescript command: %s' %\
+                            result[1]['NSAppleScriptErrorMessage']
+            raise TooSaltyUISoupException(error_message.encode('utf-8',
+                                                               'ignore'))
 
         return result[0]
 
@@ -214,7 +230,7 @@ class MacUtils(_Utils):
                 - string with element selector.
             """
 
-            cmd = ['tell application "System Events" to tell process "%s"'% process_name,
+            cmd = ['tell application "System Events" to tell process "%s"' % process_name,
                    '  set visible to true',
                    '  return front window',
                    'end tell']
@@ -237,7 +253,7 @@ class MacUtils(_Utils):
                 - instance of AppleEventDescriptor.
             """
 
-            cmd = ['tell application "System Events" to tell process "%s"'% process_name,
+            cmd = ['tell application "System Events" to tell process "%s"' % process_name,
                    '  set visible to true',
                    '  return %s' % obj_selector,
                    'end tell']
@@ -259,7 +275,7 @@ class MacUtils(_Utils):
                 - process_name: string, name of process.
 
             Returns:
-                - Tuple that contains list with element selectors and
+                - Tuple that contains dict of element selectors and
                 elements layer number.
             """
 
@@ -284,11 +300,11 @@ class MacUtils(_Utils):
                 list(AppleEventDescriptor(
                     MacUtils.execute_applescript_command(cmd)))
 
-            result = ([el.applescript_specifier for el in
-                       list(event_descriptors_list[0])],
-                      int(event_descriptors_list[1].string_value))
+            elements = [{'selector': el.applescript_specifier,
+                         'class_id': el.class_id} for el in
+                        list(event_descriptors_list[0])]
 
-            return result
+            return elements, int(event_descriptors_list[1].string_value)
 
         @classmethod
         def get_element_properties(cls, obj_selector, process_name):
@@ -332,7 +348,7 @@ class MacUtils(_Utils):
                                         value, process_name,
                                         string_value=True):
             """
-            Gets all element properties.
+            Sets element attribute.
 
             Arguments:
                 - obj_selector: string, object selector.

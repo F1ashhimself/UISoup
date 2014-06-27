@@ -21,6 +21,7 @@ __author__ = 'f1ashhimself@gmail.com'
 from os import system
 from time import sleep
 from inspect import ismethod
+from platform import system as platform_system
 
 from . import uisoup
 
@@ -40,9 +41,7 @@ class UIInspector(object):
         """
 
         dict_info = {}
-        dict_info['child_id'] = obj_element.i_object_id
         lst_attribute_name_list = ['acc_role_name',
-                                   '_role',
                                    'acc_name',
                                    'acc_value',
                                    'acc_location',
@@ -81,7 +80,9 @@ def main():
             if (x, y) != (x_old, y_old):
                 x_old, y_old = x, y
                 obj_element = uisoup.get_object_by_coordinates(x, y)
-                system('cls')
+                clear_command = \
+                    'cls' if platform_system == 'Windows' else 'clear'
+                system(clear_command)
                 print UIInspector.get_current_element_info(obj_element)
             sleep(0.5)
     except KeyboardInterrupt:

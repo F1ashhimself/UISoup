@@ -19,6 +19,7 @@ __author__ = 'f1ashhimself@gmail.com'
 from ..interfaces.i_element import IElement
 from ..utils.mac_utils import MacUtils
 from .. import TooSaltyUISoupException
+from .mouse import MacMouse
 
 
 class MacElement(IElement):
@@ -58,7 +59,10 @@ class MacElement(IElement):
         'AXGenericElement': u'gen'
     }
 
-    def __init__(self, obj_selector, layer_num, process_name, process_id):
+    _mouse = MacMouse()
+
+    def __init__(self, obj_selector, layer_num, process_name, process_id,
+                 class_id=None):
         """
         Constructor.
 
@@ -67,12 +71,14 @@ class MacElement(IElement):
             - layer_num: int, layer number. I.e. main window will be layer 0.
             - process_name: string, process
             - process_id: int, process id.
+            - class_id: string, element class identifier.
         """
 
         self._object_selector = obj_selector
         self._layer_num = layer_num
         self._proc_id = process_id
         self._proc_name = process_name
+        self._class_id = class_id
         self._cache = set()
 
     @property
@@ -94,17 +100,33 @@ class MacElement(IElement):
 
         return self._properties.get('AXRole', None)
 
-    def click(self, x_offset=None, y_offset=None):
-        pass
+    def click(self, x_offset=0, y_offset=0):
+        x, y, w, h = self.acc_location
+        x += x_offset if x_offset is not None else w / 2
+        y += y_offset if y_offset is not None else h / 2
 
-    def right_click(self, x_offset=None, y_offset=None):
-        pass
+        self._mouse.click(x, y)
 
-    def double_click(self, x_offset=None, y_offset=None):
-        pass
+    def right_click(self, x_offset=0, y_offset=0):
+        x, y, w, h = self.acc_location
+        x += x_offset if x_offset is not None else w / 2
+        y += y_offset if y_offset is not None else h / 2
+
+        self._mouse.click(x, y, self._mouse.RIGHT_BUTTON)
+
+    def double_click(self, x_offset=0, y_offset=0):
+        x, y, w, h = self.acc_location
+        x += x_offset if x_offset is not None else w / 2
+        y += y_offset if y_offset is not None else h / 2
+
+        self._mouse.double_click(x, y)
 
     def drag_to(self, x, y, x_offset=None, y_offset=None, smooth=True):
-        pass
+        el_x, el_y, el_w, el_h = self.acc_location
+        el_x += x_offset if x_offset is not None else el_w / 2
+        el_y += y_offset if y_offset is not None else el_h / 2
+
+        self._mouse.drag(el_x, el_y, x, y, smooth)
 
     @property
     def proc_id(self):
@@ -153,7 +175,8 @@ class MacElement(IElement):
 
     @property
     def acc_name(self):
-        return self._properties.get('AXDescription', None)
+        return self._properties.get('AXDescription', None) or \
+            self._properties.get('AXTitle', None) or self._class_id
 
     @property
     def set_focus(self):
@@ -166,8 +189,8 @@ class MacElement(IElement):
 
     @property
     def acc_location(self):
-        x, y = self._properties['AXPosition']
-        w, h = self._properties['AXSize']
+        x, y = self._properties.get('AXPosition', [0, 0])
+        w, h = self._properties.get('AXSize', [0, 0])
 
         return map(int, [x, y, w, h])
 
@@ -182,7 +205,7 @@ class MacElement(IElement):
 
     @property
     def acc_description(self):
-        return self.acc_name
+        return self._properties.get('AXDescription', None)
 
     @property
     def acc_parent(self):
@@ -195,7 +218,8 @@ class MacElement(IElement):
                 MacElement(event_descriptor.from_.applescript_specifier,
                            self.acc_parent_count - 1,
                            self._proc_name,
-                           self.proc_id)
+                           self.proc_id,
+                           event_descriptor.class_id)
 
         return result
 
@@ -229,8 +253,10 @@ class MacElement(IElement):
         if not len(children):
             raise StopIteration()
 
-        for el in children:
-            yield MacElement(el, layer_number, self._proc_name, self.proc_id)
+        for element in children:
+            yield MacElement(element['selector'], layer_number,
+                             self._proc_name, self.proc_id,
+                             element['class_id'])
 
     def __findcacheiter(self, only_visible, **kwargs):
         """

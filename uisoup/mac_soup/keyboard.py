@@ -29,19 +29,19 @@ class MacKeyboard(IKeyboard):
         """ Holder for Macintosh keyboard codes stored as Keys.
         """
 
-        LEFT_ALT = Key(0x3A) # Left ALT key
-        RIGHT_ALT = Key(0x3D) # Right ALT key
+        LEFT_ALT = Key(0x3A)  # Left ALT key
+        RIGHT_ALT = Key(0x3D)  # Right ALT key
         LEFT_SHIFT = Key(0x38)  # Left SHIFT key
         RIGHT_SHIFT = Key(0x3C)  # Right SHIFT key
         LEFT_CONTROL = Key(0x3B)  # Left CONTROL key
         RIGHT_CONTROL = Key(0x3E)  # Right CONTROL key
         LEFT_COMMAND = Key(0x37)  # Left COMMAND key
-        RIGHT_COMMAND= Key(0x36)  # Right COMMAND key
+        RIGHT_COMMAND = Key(0x36)  # Right COMMAND key
         BACKSPACE = Key(0x33)  # BACKSPACE key
         TAB = Key(0x30)  # TAB key
         CLEAR = Key(0x47)  # CLEAR key
         RETURN = Key(0x24)  # ENTER key
-        SHIFT =  LEFT_SHIFT  # SHIFT key
+        SHIFT = LEFT_SHIFT  # SHIFT key
         CONTROL = LEFT_CONTROL  # CTRL key
         ALT = LEFT_ALT  # ALT key
         CAPS_LOCK = Key(0x39)  # CAPS LOCK key
