@@ -16,7 +16,13 @@
 
 __author__ = 'f1ashhimself@gmail.com'
 
+import re
+from inspect import ismethod
+from types import FunctionType
 from abc import ABCMeta, abstractmethod, abstractproperty
+import xml.dom.minidom
+
+from ..utils import _Utils
 
 
 class IElement(object):
@@ -25,16 +31,6 @@ class IElement(object):
     """
 
     __metaclass__ = ABCMeta
-
-    @abstractmethod
-    def __init__(self, obj_handle, i_object_id):
-        """
-        Constructor.
-
-        Arguments:
-            - obj_handle: instance of i_accessible or window handle.
-            - i_object_id: int, object id.
-        """
 
     @abstractmethod
     def click(self, x_offset=None, y_offset=None):
@@ -99,24 +95,6 @@ class IElement(object):
             - None
         """
 
-    @abstractmethod
-    def check_state(self, state):
-        """
-        Checks object state.
-
-        Arguments:
-            - state: int, state flag.
-
-        Returns:
-            - bool that describes state.
-        """
-
-    @abstractproperty
-    def hwnd(self):
-        """
-        Indicates window handle.
-        """
-
     @abstractproperty
     def proc_id(self):
         """
@@ -133,12 +111,6 @@ class IElement(object):
     def is_selected(self):
         """
         Indicates selected state.
-        """
-
-    @abstractproperty
-    def is_pressed(self):
-        """
-        Indicates pressed state.
         """
 
     @abstractproperty
@@ -172,28 +144,10 @@ class IElement(object):
         """
 
     @abstractproperty
-    def acc_role(self):
-        """
-        Property for element role.
-        """
-
-    @abstractproperty
     def acc_name(self):
         """
         Property for element name.
         Also need to specify setter for this property
-        """
-
-    @abstractmethod
-    def set_name(self, name):
-        """
-        Sets element name.
-
-        Arguments:
-            - name: string, element name.
-
-        Returns:
-            - None
         """
 
     @abstractmethod
@@ -240,33 +194,9 @@ class IElement(object):
         """
 
     @abstractproperty
-    def acc_default_action(self):
-        """
-        Property for element default action.
-        """
-
-    @abstractproperty
     def acc_description(self):
         """
         Property for element description.
-        """
-
-    @abstractproperty
-    def acc_help(self):
-        """
-        Property for element help.
-        """
-
-    @abstractproperty
-    def acc_help_topic(self):
-        """
-        Property for element topic.
-        """
-
-    @abstractproperty
-    def acc_keyboard_shortcut(self):
-        """
-        Property for element keyboard shortcut.
         """
 
     @abstractproperty
@@ -282,39 +212,9 @@ class IElement(object):
         """
 
     @abstractproperty
-    def acc_state(self):
-        """
-        Property for element state.
-        """
-
-    @abstractmethod
-    def acc_do_default_action(self):
-        """
-        Does default action for element.
-
-        Arguments:
-            - None
-
-        Returns:
-            - None
-        """
-
-    @abstractproperty
-    def acc_focus(self):
+    def acc_focused_element(self):
         """
         Property for element in focus.
-        """
-
-    @abstractmethod
-    def acc_select(self, i_selection):
-        """
-        Does default action for element.
-
-        Arguments:
-            - None
-
-        Returns:
-            - None
         """
 
     @abstractproperty
@@ -340,14 +240,8 @@ class IElement(object):
             - c_name: string or lambda.
             - location: string or lambda.
             - value: string or lambda.
-            - default_action: string or lambda.
             - description: string or lambda.
-            - help: string or lambda.
-            - help_topic: string or lambda.
-            - keyboard_shortcut: string or lambda.
             - selection: string or lambda.
-            - state: string or lambda.
-            - focus: string or lambda.
             - role_name: string or lambda.
             - parent_count: string or lambda.
             - child_count: string or lambda.
@@ -369,14 +263,8 @@ class IElement(object):
             - c_name: string or lambda.
             - location: string or lambda.
             - value: string or lambda.
-            - default_action: string or lambda.
             - description: string or lambda.
-            - help: string or lambda.
-            - help_topic: string or lambda.
-            - keyboard_shortcut: string or lambda.
             - selection: string or lambda.
-            - state: string or lambda.
-            - focus: string or lambda.
             - role_name: string or lambda.
             - parent_count: string or lambda.
             - child_count: string or lambda.
@@ -396,14 +284,8 @@ class IElement(object):
             - c_name: string or lambda.
             - location: string or lambda.
             - value: string or lambda.
-            - default_action: string or lambda.
             - description: string or lambda.
-            - help: string or lambda.
-            - help_topic: string or lambda.
-            - keyboard_shortcut: string or lambda.
             - selection: string or lambda.
-            - state: string or lambda.
-            - focus: string or lambda.
             - role_name: string or lambda.
             - parent_count: string or lambda.
             - child_count: string or lambda.
@@ -412,7 +294,6 @@ class IElement(object):
             - True if object exists otherwise False.
         """
 
-    @abstractmethod
     def toxml(self):
         """
         Convert Element Tree to XML.
@@ -423,3 +304,81 @@ class IElement(object):
         Returns:
             - None
         """
+
+        obj_document = xml.dom.minidom.Document()
+        lst_queue = [(self, obj_document)]
+
+        while lst_queue:
+            obj_element, obj_tree = lst_queue.pop(0)
+            role_name = obj_element.acc_role_name
+            obj_name = obj_element.acc_name
+            str_name = unicode(obj_name) if obj_name else ''
+            str_location = ','.join(str(x) for x in obj_element.acc_location)
+            obj_sub_tree = xml.dom.minidom.Element(role_name)
+            obj_sub_tree.ownerDocument = obj_document
+
+            try:
+                obj_sub_tree.attributes['Name'] = str_name
+            except:
+                obj_sub_tree.attributes['Name'] = \
+                    str_name.encode('unicode-escape')
+
+            obj_sub_tree.attributes['Location'] = str_location
+            obj_tree.appendChild(obj_sub_tree)
+
+            if obj_element.acc_child_count:
+                for obj_element_child in obj_element:
+                    lst_queue.append((obj_element_child, obj_sub_tree))
+
+        return obj_document.toprettyxml()
+
+    def __str__(self):
+        result = '[Role: %s(0x%X) | Name: %r | Child count: %d]' % \
+                 (self.acc_role_name,
+                  self.acc_role,
+                  self.acc_name,
+                  self.acc_child_count)
+
+        return result
+
+    def _match(self, only_visible, **kwargs):
+        """
+        Match method.
+
+        Arguments:
+            - only_visible: bool, flag that indicates will we search only
+            through visible elements.
+            - role: string or lambda e.g. lambda x: x == 13
+            - name: string or lambda.
+            - c_name: string or lambda.
+            - location: string or lambda.
+            - value: string or lambda.
+            - description: string or lambda.
+            - parent: string or lambda.
+            - selection: string or lambda.
+            - role_name: string or lambda.
+
+        Returns:
+            - True if element was matched otherwise False.
+        """
+
+        try:
+            if only_visible and not self.is_visible:
+                return False
+
+            for str_property, expected_result in kwargs.items():
+                attr = getattr(self, 'acc_' + str_property)
+                if ismethod(attr):
+                    attr = attr()
+
+                if type(expected_result) is FunctionType:
+                    if not expected_result(attr):
+                        return False
+                else:
+                    regex = _Utils.convert_wildcard_to_regex(expected_result)
+                    if not re.match(regex, attr):
+                        return False
+        except:
+            return False
+        else:
+            return True

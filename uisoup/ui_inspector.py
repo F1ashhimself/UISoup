@@ -21,6 +21,7 @@ __author__ = 'f1ashhimself@gmail.com'
 from os import system
 from time import sleep
 from inspect import ismethod
+from platform import system as platform_system
 
 from . import uisoup
 
@@ -40,18 +41,11 @@ class UIInspector(object):
         """
 
         dict_info = {}
-        dict_info['child_id'] = obj_element.i_object_id
         lst_attribute_name_list = ['acc_role_name',
-                                   'acc_role',
                                    'acc_name',
                                    'acc_value',
-                                   'acc_state',
                                    'acc_location',
                                    'acc_description',
-                                   'acc_keyboard_shortcut',
-                                   'acc_default_action',
-                                   'acc_help',
-                                   'acc_help_topic',
                                    'acc_child_count']
 
         for attr in lst_attribute_name_list:
@@ -61,7 +55,6 @@ class UIInspector(object):
                     dict_info[attr] = value()
                 else:
                     dict_info[attr] = value
-
             except:
                 dict_info[attr] = None
 
@@ -87,8 +80,12 @@ def main():
             if (x, y) != (x_old, y_old):
                 x_old, y_old = x, y
                 obj_element = uisoup.get_object_by_coordinates(x, y)
-                system('cls')
-                print UIInspector.get_current_element_info(obj_element)
+                clear_command = \
+                    'cls' if platform_system == 'Windows' else 'clear'
+                printable_data = \
+                    UIInspector.get_current_element_info(obj_element)
+                system(clear_command)
+                print printable_data
             sleep(0.5)
     except KeyboardInterrupt:
         system('cls')
