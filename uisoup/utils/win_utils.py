@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+# !/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 #    Copyright (c) 2014 Max Beloborodko.
 #
@@ -17,17 +18,8 @@
 __author__ = 'f1ashhimself@gmail.com'
 
 
-from platform import system
-
-uisoup = None
+from ..utils import _Utils
 
 
-class TooSaltyUISoupException(Exception):
+class WinUtils(_Utils):
     pass
-
-if system() == 'Windows':
-    from uisoup.win_soup import WinSoup
-    uisoup = WinSoup()
-else:
-    from uisoup.mac_soup import MacSoup
-    uisoup = MacSoup()
