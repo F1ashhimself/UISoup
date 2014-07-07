@@ -79,7 +79,8 @@ class MacElement(IElement):
         self._proc_id = process_id
         self._proc_name = process_name
         self._class_id = class_id
-        self._cache = set()
+        self._cached_children = set()
+        self._cached_properties = None
 
     @property
     def _properties(self):
@@ -87,10 +88,12 @@ class MacElement(IElement):
         Property for element properties.
         """
 
-        properties = MacUtils.ApplescriptExecutor.get_element_properties(
-            self._object_selector, self._proc_name)
+        if not self._cached_properties:
+            self._cached_properties = \
+                MacUtils.ApplescriptExecutor.get_element_properties(
+                    self._object_selector, self._proc_name)
 
-        return properties
+        return self._cached_properties
 
     @property
     def _role(self):
@@ -106,6 +109,7 @@ class MacElement(IElement):
         y += y_offset if y_offset is not None else h / 2
 
         self._mouse.click(x, y)
+        self._cached_properties = None
 
     def right_click(self, x_offset=0, y_offset=0):
         x, y, w, h = self.acc_location
@@ -113,6 +117,7 @@ class MacElement(IElement):
         y += y_offset if y_offset is not None else h / 2
 
         self._mouse.click(x, y, self._mouse.RIGHT_BUTTON)
+        self._cached_properties = None
 
     def double_click(self, x_offset=0, y_offset=0):
         x, y, w, h = self.acc_location
@@ -120,6 +125,7 @@ class MacElement(IElement):
         y += y_offset if y_offset is not None else h / 2
 
         self._mouse.double_click(x, y)
+        self._cached_properties = None
 
     def drag_to(self, x, y, x_offset=None, y_offset=None, smooth=True):
         el_x, el_y, el_w, el_h = self.acc_location
@@ -127,6 +133,7 @@ class MacElement(IElement):
         el_y += y_offset if y_offset is not None else el_h / 2
 
         self._mouse.drag(el_x, el_y, x, y, smooth)
+        self._cached_properties = None
 
     @property
     def proc_id(self):
@@ -200,10 +207,10 @@ class MacElement(IElement):
     def acc_value(self):
         return self._properties.get('AXValue', None)
 
-    @property
     def set_value(self, value):
         MacUtils.ApplescriptExecutor.set_element_attribute_value(
             self._object_selector, 'AXValue', value, self._proc_name)
+        self._cached_properties = None
 
     @property
     def acc_description(self):
@@ -271,7 +278,7 @@ class MacElement(IElement):
             - Yield found element.
         """
 
-        for obj_element in self._cache:
+        for obj_element in self._cached_children:
             if obj_element._match(only_visible, **kwargs):
                 yield obj_element
 
@@ -290,12 +297,12 @@ class MacElement(IElement):
 
         while lst_queue:
             obj_element = lst_queue.pop(0)
-            self._cache.add(obj_element)
+            self._cached_children.add(obj_element)
 
             if obj_element._match(only_visible, **kwargs):
                 yield obj_element
 
-            if self.acc_child_count:
+            if obj_element.acc_child_count:
                 childs = [el for el in list(obj_element)]
                 lst_queue[:0] = childs
 

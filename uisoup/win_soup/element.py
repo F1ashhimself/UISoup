@@ -188,7 +188,7 @@ class WinElement(IElement):
 
         self._i_accessible = i_accessible
         self._i_object_id = i_object_id
-        self._cache = set()
+        self._cached_children = set()
 
     def _check_state(self, state):
         """
@@ -474,7 +474,7 @@ class WinElement(IElement):
             - Yield found element.
         """
 
-        for obj_element in self._cache:
+        for obj_element in self._cached_children:
             if obj_element._match(only_visible, **kwargs):
                 yield obj_element
 
@@ -496,7 +496,7 @@ class WinElement(IElement):
 
         while lst_queue:
             obj_element = lst_queue.pop(0)
-            self._cache.add(obj_element)
+            self._cached_children.add(obj_element)
 
             if obj_element._match(only_visible, **kwargs):
                 yield obj_element
