@@ -190,6 +190,7 @@ class MacKeyboard(IKeyboard):
         for key in args:
             if key.children:
                 self.press_key_and_hold(key.code)
+                self._wait_for_key_combo_to_be_processed()
                 self.send(*key.children)
                 self.release_key(key.code)
             else:

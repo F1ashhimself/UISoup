@@ -53,7 +53,8 @@ class _Utils(object):
             - string with processed text.
         """
 
-        replace_pairs = [(u'\xa0', ' '), ]
+        replace_pairs = [(u'\xa0', ' '),
+                         (u'\u2014', '-')]
 
         for from_, to_ in replace_pairs:
             text = text.replace(from_, to_)

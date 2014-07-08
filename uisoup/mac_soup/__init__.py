@@ -80,7 +80,7 @@ class MacSoup(ISoup):
         win_list = CG.CGWindowListCopyWindowInfo(filters, CG.kCGNullWindowID)
 
         window = filter(lambda x:
-                        re.match(regex,
+                        re.match(MacUtils.replace_inappropriate_symbols(regex),
                                  MacUtils.replace_inappropriate_symbols(
                                      x.get('kCGWindowName', '')) +
                                  x.get('kCGWindowOwnerName', ''),
