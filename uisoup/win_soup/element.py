@@ -344,8 +344,9 @@ class WinElement(IElement):
 
         self._i_accessible._IAccessible__com__get_accName(
             obj_child_id, ctypes.byref(obj_name))
+        result = obj_name.value or ''
 
-        return WinUtils.replace_inappropriate_symbols(obj_name.value)
+        return WinUtils.replace_inappropriate_symbols(result)
 
     def set_focus(self):
         self.acc_select(self.SelectionFlag.TAKEFOCUS)

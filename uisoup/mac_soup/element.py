@@ -185,7 +185,7 @@ class MacElement(IElement):
         result = self._properties.get('AXDescription') or \
             self._properties.get('AXTitle') or \
             self._properties.get('AXValue') or \
-            self._class_id
+            self._class_id or ''
 
         return MacUtils.replace_inappropriate_symbols(result)
 
