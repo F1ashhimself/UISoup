@@ -15,7 +15,7 @@ if __name__ == '__main__':
     setup(
         name='UISoup',
         version='2.0',
-        description='Library for UI testing.',
+        description='Cross Platform GUI Test Automation tool.',
         long_description=package_env('README.rst'),
         author='Max Beloborodko',
         author_email='f1ashhimself@gmail.com',
