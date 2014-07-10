@@ -28,6 +28,9 @@ class TooSaltyUISoupException(Exception):
 if system() == 'Windows':
     from uisoup.win_soup import WinSoup
     uisoup = WinSoup()
-else:
+elif system() == 'Darwin':
     from uisoup.mac_soup import MacSoup
     uisoup = MacSoup()
+else:
+    raise TooSaltyUISoupException('We are sorry but we don\'t have UISoup '
+                                  'implementation for "%s" OS.' % system())
