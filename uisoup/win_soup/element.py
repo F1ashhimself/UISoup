@@ -105,7 +105,7 @@ class WinElement(IElement):
 
     _mouse = WinMouse()
 
-    class StateFlag(object):
+    class _StateFlag(object):
         SYSTEM_NORMAL = 0
         SYSTEM_UNAVAILABLE = 0x1
         SYSTEM_SELECTED = 0x2
@@ -140,7 +140,7 @@ class WinElement(IElement):
         SYSTEM_HASPOPUP = 0x40000000
         SYSTEM_VALID = 0x7fffffff
 
-    class SelectionFlag(object):
+    class _SelectionFlag(object):
         NONE = 0
         TAKEFOCUS = 0x1
         TAKESELECTION = 0x2
@@ -309,19 +309,19 @@ class WinElement(IElement):
 
     @property
     def is_selected(self):
-        return self._check_state(self.StateFlag.SYSTEM_SELECTED)
+        return self._check_state(self._StateFlag.SYSTEM_SELECTED)
 
     @property
     def is_checked(self):
-        return self._check_state(self.StateFlag.SYSTEM_CHECKED)
+        return self._check_state(self._StateFlag.SYSTEM_CHECKED)
 
     @property
     def is_visible(self):
-        return not self._check_state(self.StateFlag.SYSTEM_INVISIBLE)
+        return not self._check_state(self._StateFlag.SYSTEM_INVISIBLE)
 
     @property
     def is_enabled(self):
-        return not self._check_state(self.StateFlag.SYSTEM_UNAVAILABLE)
+        return not self._check_state(self._StateFlag.SYSTEM_UNAVAILABLE)
 
     @property
     def acc_parent_count(self):
@@ -355,7 +355,7 @@ class WinElement(IElement):
         return WinUtils.replace_inappropriate_symbols(result)
 
     def set_focus(self):
-        self._select(self.SelectionFlag.TAKEFOCUS)
+        self._select(self._SelectionFlag.TAKEFOCUS)
 
     @property
     def acc_c_name(self):
