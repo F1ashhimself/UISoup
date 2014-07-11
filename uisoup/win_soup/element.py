@@ -259,6 +259,12 @@ class WinElement(IElement):
 
         return obj_role.value
 
+    def _select(self, i_selection):
+        if self._i_object_id:
+            return self._i_accessible.accSelect(i_selection, self._i_object_id)
+        else:
+            return self._i_accessible.accSelect(i_selection)
+
     def click(self, x_offset=0, y_offset=0):
         x, y, w, h = self.acc_location
         x += x_offset if x_offset is not None else w / 2
@@ -349,7 +355,7 @@ class WinElement(IElement):
         return WinUtils.replace_inappropriate_symbols(result)
 
     def set_focus(self):
-        self.acc_select(self.SelectionFlag.TAKEFOCUS)
+        self._select(self.SelectionFlag.TAKEFOCUS)
 
     @property
     def acc_c_name(self):
