@@ -183,11 +183,15 @@ class MacElement(IElement):
     @property
     def acc_name(self):
         result = self._properties.get('AXDescription') or \
-            self._properties.get('AXTitle') or \
-            self._properties.get('AXValue') or \
-            self._class_id or ''
+            self._properties.get('AXTitle')\
 
-        return MacUtils.replace_inappropriate_symbols(result)
+        if not result:
+            if self.acc_role_name == self._acc_role_name_map['AXTextField']:
+                result = self._class_id
+            else:
+                result = self._properties.get('AXValue') or self._class_id
+
+        return MacUtils.replace_inappropriate_symbols(result or '')
 
     @property
     def set_focus(self):

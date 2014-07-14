@@ -39,7 +39,7 @@ class WinSoup(ISoup):
 
     mouse = WinMouse()
     keyboard = WinKeyboard()
-    _default_sys_encoding = sys.stdout.encoding
+    _default_sys_encoding = sys.stdout.encoding or sys.getdefaultencoding()
 
     class _EnumWindowsCallback(object):
 

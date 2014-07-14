@@ -34,7 +34,7 @@ class MacSoup(ISoup):
 
     mouse = MacMouse()
     keyboard = MacKeyboard()
-    _default_sys_encoding = sys.stdout.encoding
+    _default_sys_encoding = sys.stdout.encoding or sys.getdefaultencoding()
 
     def get_object_by_coordinates(self, x, y):
         result = None
