@@ -355,7 +355,7 @@ class MacUtils(_Utils):
         @classmethod
         def get_axunknown_windows(cls, process_name):
             """
-            Gets element attribute.
+            Gets AXUnknown windows by given process name.
 
             Arguments:
                 - process_name: string, name of process.
