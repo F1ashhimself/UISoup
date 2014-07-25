@@ -103,6 +103,27 @@ class MacElement(IElement):
 
         return self._properties.get('AXRole', None)
 
+    def _find_windows_by_same_proc(self):
+        """
+        Find window by same process id.
+
+        Arguments:
+            - None
+
+        Returns:
+            - list of windows.
+        """
+
+        axunknown_windows = \
+            MacUtils.ApplescriptExecutor.get_axunknown_windows(self._proc_name)
+
+        mac_elements = \
+            [MacElement(element.applescript_specifier, 1, self._proc_name,
+                        self._proc_id, element.class_id) for element in
+             axunknown_windows]
+
+        return filter(lambda x: x.acc_child_count, mac_elements)
+
     def click(self, x_offset=0, y_offset=0):
         x, y, w, h = self.acc_location
         x += x_offset if x_offset is not None else w / 2
@@ -300,6 +321,9 @@ class MacElement(IElement):
         """
 
         lst_queue = list(self)
+
+        if self.is_top_level_window:
+            lst_queue.extend(self._find_windows_by_same_proc())
 
         while lst_queue:
             obj_element = lst_queue.pop(0)
