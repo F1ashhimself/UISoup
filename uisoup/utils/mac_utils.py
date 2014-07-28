@@ -103,7 +103,7 @@ class AppleEventDescriptor(object):
         Property for element class id.
         """
 
-        return self.seld_.string_value.replace('\\', '\\\\')
+        return (self.seld_.string_value or '').replace('\\', '\\\\')
 
     @property
     def seld_(self):
@@ -145,9 +145,13 @@ class AppleEventDescriptor(object):
         Property for applescript specifier.
         """
 
-        class_id = u'"%s"' % self.class_id if not self.class_id.isdigit() or \
-            self.class_name in [AppleEvents.cWindow, 'pcap'] else self.class_id
-        specifier = u'«class %s» %s' % (self.class_name, class_id)
+        if self.class_id:
+            class_id = u'"%s"' % self.class_id if not self.class_id.isdigit()\
+                       or self.class_name in [AppleEvents.cWindow, 'pcap'] \
+                       else self.class_id
+            specifier = u'«class %s» %s' % (self.class_name, class_id)
+        else:
+            specifier = u'every «class %s»' % self.class_name
 
         if self.from_.class_name:
             # Sometimes applescript returns menu bar as a child of
@@ -178,7 +182,7 @@ class MacUtils(_Utils):
             executed.
 
         Returns:
-            - string with result of executed command.
+            - AppleEventDescriptor with result of executed command.
         """
 
         cmd = '\n'.join([cmd] if isinstance(cmd, basestring) else cmd)
@@ -192,7 +196,7 @@ class MacUtils(_Utils):
             raise TooSaltyUISoupException(error_message.encode('utf-8',
                                                                'ignore'))
 
-        return result[0]
+        return AppleEventDescriptor(result[0])
 
     class ApplescriptExecutor(object):
 
@@ -212,8 +216,7 @@ class MacUtils(_Utils):
                    '  return (1st window whose value of attribute "AXMain" is true)',
                    'end tell']
 
-            event_descriptor = \
-                AppleEventDescriptor(MacUtils.execute_applescript_command(cmd))
+            event_descriptor = MacUtils.execute_applescript_command(cmd)
 
             return event_descriptor.seld_.string_value + \
                 event_descriptor.from_.seld_.string_value
@@ -236,10 +239,7 @@ class MacUtils(_Utils):
                    '  return %s' % obj_selector,
                    'end tell']
 
-            event_descriptor = \
-                AppleEventDescriptor(MacUtils.execute_applescript_command(cmd))
-
-            return event_descriptor
+            return MacUtils.execute_applescript_command(cmd)
 
         @classmethod
         def get_children_elements(cls, obj_selector, layer_num, process_name):
@@ -275,8 +275,7 @@ class MacUtils(_Utils):
                    'return collectedElements']
 
             event_descriptors_list = \
-                list(AppleEventDescriptor(
-                    MacUtils.execute_applescript_command(cmd)))
+                list(MacUtils.execute_applescript_command(cmd))
 
             elements = [{'selector': el.applescript_specifier,
                          'class_id': el.class_id} for el in
@@ -306,8 +305,8 @@ class MacUtils(_Utils):
                    '  return res',
                    'end tell']
 
-            event_descriptors_list = list(AppleEventDescriptor(
-                MacUtils.execute_applescript_command(cmd)))
+            event_descriptors_list = list(
+                MacUtils.execute_applescript_command(cmd))
 
             # Unpacking properties to dict.
             el_properties = dict()
@@ -352,3 +351,27 @@ class MacUtils(_Utils):
                 result = False
 
             return result
+
+        @classmethod
+        def get_axunknown_windows(cls, process_name):
+            """
+            Gets AXUnknown windows by given process name.
+
+            Arguments:
+                - process_name: string, name of process.
+
+            Returns:
+                - List of AppleEventDescriptor elements.
+            """
+            cmd = ['tell application "System Events" to tell process "%s"' % process_name,
+                   '  set visible to true',
+                   '  set unknownWindows to {}',
+                   '  repeat with e in UI elements',
+                   '    if value of attribute "AXRole" of e is equal to "AXUnknown" then',
+                   '      set unknownWindows to unknownWindows & {e}',
+                   '    end if',
+                   '  end repeat',
+                   '  return unknownWindows',
+                   'end tell']
+
+            return list(MacUtils.execute_applescript_command(cmd))

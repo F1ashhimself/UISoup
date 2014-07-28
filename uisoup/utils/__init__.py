@@ -18,6 +18,8 @@ __author__ = 'f1ashhimself@gmail.com'
 
 import re
 
+from .. import TooSaltyUISoupException
+
 
 class _Utils(object):
 
@@ -60,3 +62,38 @@ class _Utils(object):
             text = text.replace(from_, to_)
 
         return text
+
+    @classmethod
+    def verify_xy_coordinates(self, x, y):
+        """
+        Verifies that x and y is instance of int otherwise raises exception.
+
+        Arguments:
+            - x: x variable.
+            - y: y variable.
+
+        Returns:
+            - None
+        """
+
+        if not isinstance(x, int) or not isinstance(y, int):
+            raise TooSaltyUISoupException(
+                'x and y arguments should hold int coordinates.')
+
+    @classmethod
+    def verify_mouse_button_name(self, button_name, supported_names):
+        """
+        Verifies that button name is supported otherwise raises exception.
+
+        Arguments:
+            - button_name: string, button name.
+            - supported_names: list, supported button names.
+
+        Returns:
+            - None
+        """
+
+        if not button_name in supported_names:
+            raise TooSaltyUISoupException(
+                'Button name should be one of supported %s.' %
+                repr(supported_names))
