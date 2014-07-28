@@ -214,7 +214,6 @@ class MacElement(IElement):
 
         return MacUtils.replace_inappropriate_symbols(result or '')
 
-    @property
     def set_focus(self):
         MacUtils.ApplescriptExecutor.set_element_attribute_value(
             self._object_selector, 'AXFocused', 'true', self._proc_name, False)
