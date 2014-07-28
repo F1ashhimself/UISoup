@@ -22,14 +22,14 @@ from Quartz import CoreGraphics as CG
 from time import sleep
 
 from ..interfaces.i_mouse import IMouse
-from .. import TooSaltyUISoupException
+from ..utils.mac_utils import MacUtils
 
 
 class MacMouse(IMouse):
 
     LEFT_BUTTON = u'b1c'
     RIGHT_BUTTON = u'b3c'
-    SUPPORTED_NAMES = [LEFT_BUTTON, RIGHT_BUTTON]
+    _SUPPORTED_BUTTON_NAMES = [LEFT_BUTTON, RIGHT_BUTTON]
 
     _LEFT_BUTTON_CODES = [
         CG.kCGEventLeftMouseDown,
@@ -39,38 +39,6 @@ class MacMouse(IMouse):
         CG.kCGEventRightMouseDown,
         CG.kCGEventRightMouseDragged,
         CG.kCGEventRightMouseUp]
-
-    def _verify_xy(self, x, y):
-        """
-        Verifies that x and y is instance of int otherwise raises exception.
-
-        Arguments:
-            - x: x variable.
-            - y: y variable.
-
-        Returns:
-            - None
-        """
-
-        if not isinstance(x, int) or not isinstance(y, int):
-            raise TooSaltyUISoupException(
-                'x and y arguments should hold int coordinates.')
-
-    def _verify_button_name(self, button_name):
-        """
-        Verifies that button name is supported otherwise raises exception.
-
-        Arguments:
-            - button_name: string, button name.
-
-        Returns:
-            - None
-        """
-
-        if not button_name in self.SUPPORTED_NAMES:
-            raise TooSaltyUISoupException(
-                'Button name should be one of supported %s.' %
-                repr(self.SUPPORTED_NAMES))
 
     def _compose_mouse_event_chain(self, name, press=True, release=False):
         """
@@ -142,13 +110,15 @@ class MacMouse(IMouse):
             self._do_event(code, x, y)
 
     def move(self, x, y):
-        self._verify_xy(x, y)
+        MacUtils.verify_xy_coordinates(x, y)
 
         self._do_event(CG.kCGEventMouseMoved, x, y)
 
     def drag(self, x1, y1, x2, y2, smooth=True):
-        self._verify_xy(x1, y1)
-        self._verify_xy(x2, y2)
+        MacUtils.verify_xy_coordinates(x1, y1)
+        MacUtils.verify_xy_coordinates(x2, y2)
+
+        self.press_button(x1, y1, self.LEFT_BUTTON)
 
         for i in xrange(100):
             x = x1 + (x2 - x1) * (i + 1) / 100.0
@@ -156,32 +126,38 @@ class MacMouse(IMouse):
             smooth and sleep(.01)
             self._do_event(CG.kCGEventLeftMouseDragged, x, y)
 
+        self.release_button(self.LEFT_BUTTON)
+
     def press_button(self, x, y, button_name=LEFT_BUTTON):
-        self._verify_xy(x, y)
-        self._verify_button_name(button_name)
+        MacUtils.verify_xy_coordinates(x, y)
+        MacUtils.verify_mouse_button_name(button_name, 
+                                          self._SUPPORTED_BUTTON_NAMES)
 
         event_codes = self._compose_mouse_event_chain(
             button_name, press=True, release=False)
         self._do_events(event_codes, x, y)
 
     def release_button(self, button_name=LEFT_BUTTON):
-        self._verify_button_name(button_name)
+        MacUtils.verify_mouse_button_name(button_name, 
+                                          self._SUPPORTED_BUTTON_NAMES)
 
         event_codes = self._compose_mouse_event_chain(
             button_name, press=False, release=True)
         self._do_events(event_codes, 0, 0)
 
     def click(self, x, y, button_name=LEFT_BUTTON):
-        self._verify_xy(x, y)
-        self._verify_button_name(button_name)
+        MacUtils.verify_xy_coordinates(x, y)
+        MacUtils.verify_mouse_button_name(button_name, 
+                                          self._SUPPORTED_BUTTON_NAMES)
 
         event_codes = self._compose_mouse_event_chain(
             button_name, press=True, release=True)
         self._do_events(event_codes, x, y)
 
     def double_click(self, x, y, button_name=LEFT_BUTTON):
-        self._verify_xy(x, y)
-        self._verify_button_name(button_name)
+        MacUtils.verify_xy_coordinates(x, y)
+        MacUtils.verify_mouse_button_name(button_name, 
+                                          self._SUPPORTED_BUTTON_NAMES)
 
         self.click(x, y, button_name)
         self.click(x, y, button_name)
