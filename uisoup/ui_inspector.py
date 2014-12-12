@@ -85,7 +85,7 @@ def main():
                 printable_data = \
                     UIInspector.get_current_element_info(obj_element)
                 system(clear_command)
-                print printable_data
+                print(printable_data)
             sleep(0.5)
     except KeyboardInterrupt:
         system('cls')

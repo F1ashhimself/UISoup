@@ -121,8 +121,8 @@ class WinMouse(IMouse):
 
         x_metric = ctypes.windll.user32.GetSystemMetrics(self._SM_CXSCREEN)
         y_metric = ctypes.windll.user32.GetSystemMetrics(self._SM_CYSCREEN)
-        x_calc = 65536L * x / x_metric + 1
-        y_calc = 65536L * y / y_metric + 1
+        x_calc = 65536 * x / x_metric + 1
+        y_calc = 65536 * y / y_metric + 1
         ctypes.windll.user32.mouse_event(
             flags, x_calc, y_calc, data, extra_info)
 
