@@ -79,6 +79,19 @@ class AppleEventDescriptor(object):
         raise StopIteration()
 
     @property
+    def form_(self):
+        """
+        Property for element "from" field.
+        """
+
+        from_ = self._event_descriptor.descriptorForKeyword_(
+            self._get_aeKeyword(AppleEvents.keyAEKeyForm))
+
+        result = AppleEventDescriptor(from_).string_value if from_ else None
+
+        return result
+
+    @property
     def class_name(self):
         """
         Property for element class name.
@@ -125,7 +138,7 @@ class AppleEventDescriptor(object):
         """
 
         from_ = self._event_descriptor.descriptorForKeyword_(
-            self._get_aeKeyword(AppleEvents.keyOriginalAddressAttr))
+            self._get_aeKeyword(AppleEvents.keyAEContainer))
 
         result = AppleEventDescriptor(from_) if from_ else None
 
@@ -146,9 +159,9 @@ class AppleEventDescriptor(object):
         """
 
         if self.class_id:
-            class_id = u'"%s"' % self.class_id if not self.class_id.isdigit()\
-                       or self.class_name in [AppleEvents.cWindow, 'pcap'] \
-                       else self.class_id
+            class_id = \
+                self.class_id if self.form_ == AppleEvents.kFAIndexParam else \
+                u'"%s"' % self.class_id
             specifier = u'«class %s» %s' % (self.class_name, class_id)
         else:
             specifier = u'every «class %s»' % self.class_name
@@ -363,6 +376,7 @@ class MacUtils(_Utils):
             Returns:
                 - List of AppleEventDescriptor elements.
             """
+
             cmd = ['tell application "System Events" to tell process "%s"' % process_name,
                    '  set visible to true',
                    '  set unknownWindows to {}',
@@ -372,6 +386,31 @@ class MacUtils(_Utils):
                    '    end if',
                    '  end repeat',
                    '  return unknownWindows',
+                   'end tell']
+
+            return list(MacUtils.execute_applescript_command(cmd))
+
+        @classmethod
+        def get_axdialog_windows(cls, process_name):
+            """
+            Gets AXDialog windows by given process name.
+
+            Arguments:
+                - process_name: string, name of process.
+
+            Returns:
+                - List of AppleEventDescriptor elements.
+            """
+
+            cmd = ['tell application "System Events" to tell process "%s"' % process_name,
+                   '  set visible to true',
+                   '  set dialogWindows to {}',
+                   '  repeat with e in UI elements',
+                   '    if value of attribute "AXRole" of e is equal to "AXWindow" and value of attribute "AXSubrole" of e is equal to "AXDialog" then',
+                   '      set dialogWindows to dialogWindows & {e}',
+                   '    end if',
+                   '  end repeat',
+                   '  return dialogWindows',
                    'end tell']
 
             return list(MacUtils.execute_applescript_command(cmd))
