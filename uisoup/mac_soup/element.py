@@ -116,11 +116,13 @@ class MacElement(IElement):
 
         axunknown_windows = \
             MacUtils.ApplescriptExecutor.get_axunknown_windows(self._proc_name)
+        axdialog_windows = \
+            MacUtils.ApplescriptExecutor.get_axdialog_windows(self._proc_name)
 
         mac_elements = \
             [MacElement(element.applescript_specifier, 1, self._proc_name,
                         self._proc_id, element.class_id) for element in
-             axunknown_windows]
+             axunknown_windows + axdialog_windows]
 
         return filter(lambda x: x.acc_child_count, mac_elements)
 
