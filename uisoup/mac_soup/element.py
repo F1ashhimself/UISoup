@@ -206,7 +206,7 @@ class MacElement(IElement):
     @property
     def acc_name(self):
         result = self._properties.get('AXDescription') or \
-            self._properties.get('AXTitle')\
+            self._properties.get('AXTitle')
 
         if not result:
             if self.acc_role_name == self._acc_role_name_map['AXTextField']:

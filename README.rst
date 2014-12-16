@@ -8,7 +8,7 @@ UISoup
         :alt: Downloads
         :target: https://pypi.python.org/pypi/UISoup
 
-**This library supports UI-related testing using Python. (Only Python x86 is supported)**
+**This library supports UI-related testing using Python on Windows and Mac OS. (Only Python x86 is supported)**
 
 
 **How to use examples:**
@@ -51,3 +51,19 @@ UISoup
 
 
 Also adds :code:`ui-inspector` script that allows you to inspect UI elements. Just type it in terminal.
+
+Changelog:
+======
+
+**UISoup 2.2 (released 16 Dec 2014)**
+
+* Mac OS Additions: added ability to see AXDialog windows.
+* Mac OS Additions: fixed issue when incorrect applescript specifier was constructed.
+
+**UISoup 2.0 (released 20 Jun 2014)**
+
+* Mac OS Additions: added version for Mac OS.
+
+**UISoup 1.0 (released 28 Mar 2014)**
+
+* Windows Additions: initial version for Windows.
