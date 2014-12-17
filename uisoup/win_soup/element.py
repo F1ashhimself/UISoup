@@ -22,6 +22,9 @@ import comtypes
 import comtypes.automation
 import comtypes.client
 
+import six
+from six.moves import range
+
 from .mouse import WinMouse
 from ..interfaces.i_element import IElement
 from ..utils.win_utils import WinUtils
@@ -462,7 +465,7 @@ class WinElement(IElement):
             obj_acc_child_array,
             ctypes.byref(obj_acc_child_count))
 
-        for i in xrange(obj_acc_child_count.value):
+        for i in range(obj_acc_child_count.value):
             obj_acc_child = obj_acc_child_array[i]
             if obj_acc_child.vt == comtypes.automation.VT_DISPATCH:
                 yield WinElement(obj_acc_child.value.QueryInterface(
@@ -515,12 +518,10 @@ class WinElement(IElement):
 
     def find(self, only_visible=True, **kwargs):
         try:
-            return self.__findcacheiter(only_visible,
-                                        **kwargs).next()
+            return six.next(self.__findcacheiter(only_visible, **kwargs))
         except StopIteration:
             try:
-                return self._finditer(only_visible,
-                                      **kwargs).next()
+                return six.next(self._finditer(only_visible, **kwargs))
             except StopIteration:
                 attrs = ['%s=%s' % (k, v) for k, v in kwargs.iteritems()]
                 raise TooSaltyUISoupException(

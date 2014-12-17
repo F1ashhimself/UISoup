@@ -20,6 +20,8 @@ import ctypes
 import ctypes.wintypes
 from time import sleep
 
+from six.moves import range
+
 from ..interfaces.i_mouse import IMouse
 from ..utils.win_utils import WinUtils
 
@@ -121,8 +123,8 @@ class WinMouse(IMouse):
 
         x_metric = ctypes.windll.user32.GetSystemMetrics(self._SM_CXSCREEN)
         y_metric = ctypes.windll.user32.GetSystemMetrics(self._SM_CYSCREEN)
-        x_calc = 65536 * x / x_metric + 1
-        y_calc = 65536 * y / y_metric + 1
+        x_calc = int(65536 * x / x_metric + 1)
+        y_calc = int(65536 * y / y_metric + 1)
         ctypes.windll.user32.mouse_event(
             flags, x_calc, y_calc, data, extra_info)
 
@@ -138,7 +140,7 @@ class WinMouse(IMouse):
 
         self.press_button(x1, y1, self.LEFT_BUTTON)
 
-        for i in xrange(100):
+        for i in range(100):
             x = x1 + (x2 - x1) * (i + 1) / 100.0
             y = y1 + (y2 - y1) * (i + 1) / 100.0
             if smooth:
