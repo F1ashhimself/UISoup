@@ -22,7 +22,7 @@ if __name__ == '__main__':
         packages=['uisoup'] + ['.'.join(('uisoup', p)) for p in
                                find_packages('uisoup')],
         include_package_data=True,
-        install_requires=['comtypes'],
+        install_requires=['comtypes', 'six'],
         zip_safe=False,
         entry_points={
             'console_scripts': [
