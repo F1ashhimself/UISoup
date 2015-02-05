@@ -54,6 +54,10 @@ Also adds :code:`ui-inspector` script that allows you to inspect UI elements. Ju
 
 **Changelog:**
 
+UISoup 2.3 (released 5 Feb 2015)
+
+* Mac OS Additions: fixed issue when we can't work with windows that have double quotes in name.
+
 UISoup 2.2 (released 16 Dec 2014)
 
 * Mac OS Additions: added ability to see AXDialog windows.
