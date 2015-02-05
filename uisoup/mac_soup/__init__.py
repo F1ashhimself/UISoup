@@ -98,6 +98,9 @@ class MacSoup(ISoup):
         process_name = window['kCGWindowOwnerName']
         window_name = window['kCGWindowName']
         process_id = int(window['kCGWindowOwnerPID'])
+        # Escape double quotes in window name.
+        window_name = window_name.replace('"', '\\"')
+
         selector = \
             MacUtils.ApplescriptExecutor.get_apple_event_descriptor(
                 'window "%s"' % window_name,
