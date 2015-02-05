@@ -161,7 +161,7 @@ class AppleEventDescriptor(object):
         if self.class_id:
             class_id = \
                 self.class_id if self.form_ == AppleEvents.kFAIndexParam else \
-                u'"%s"' % self.class_id
+                u'"%s"' % self.class_id.replace('"', '\\"')
             specifier = u'«class %s» %s' % (self.class_name, class_id)
         else:
             specifier = u'every «class %s»' % self.class_name
