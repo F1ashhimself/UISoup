@@ -56,7 +56,8 @@ class MacElement(IElement):
         'AXApplication': u'app',
         'AXDocItem': u'doc',
         'AXHeading': u'tch',
-        'AXGenericElement': u'gen'
+        'AXGenericElement': u'gen',
+        'AXLink': u'lnk'
     }
 
     _mouse = MacMouse()

@@ -54,6 +54,12 @@ Also adds :code:`ui-inspector` script that allows you to inspect UI elements. Ju
 
 **Changelog:**
 
+
+UISoup 2.4.1 (released 4 Mar 2015)
+
+* Mac OS Additions: added new element role "AXLink".
+* Mac OS Additions: fixed issue when we getting fail on execution "get attribute "AXURL" of UI element" string.
+
 UISoup 2.4 (released 5 Feb 2015)
 
 * Mac OS Additions: fixed issue when we can't work with windows that have double quotes in name.

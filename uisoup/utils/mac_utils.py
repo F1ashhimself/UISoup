@@ -313,7 +313,9 @@ class MacUtils(_Utils):
                    '  set visible to true',
                    '  set res to {}',
                    '  repeat with attr in attributes of %s' % obj_selector,
-                   '    set res to res & {{name of attr, value of attr}}',
+                   '    try',
+                   '      set res to res & {{name of attr, value of attr}}',
+                   '    end try',
                    '  end repeat',
                    '  return res',
                    'end tell']
