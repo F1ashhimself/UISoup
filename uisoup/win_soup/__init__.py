@@ -25,6 +25,8 @@ import comtypes.automation
 import comtypes.client
 import sys
 
+from six import string_types, text_type
+
 from ..utils.win_utils import WinUtils
 from .. import TooSaltyUISoupException
 from ..interfaces.i_soup import ISoup
@@ -83,8 +85,8 @@ class WinSoup(ISoup):
     def get_window(self, obj_handle=None):
         if obj_handle in (0, None):
             obj_handle = ctypes.windll.user32.GetDesktopWindow()
-        elif isinstance(obj_handle, basestring):
-            obj_name = unicode(obj_handle)
+        elif isinstance(obj_handle, string_types):
+            obj_name = text_type(obj_handle)
 
             regex = WinUtils.convert_wildcard_to_regex(obj_name)
 
