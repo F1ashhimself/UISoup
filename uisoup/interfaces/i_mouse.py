@@ -39,13 +39,14 @@ class IMouse(object):
         """
 
     @abstractmethod
-    def move(self, x, y):
+    def move(self, x, y, smooth=True):
         """
         Move the mouse to the specified coordinates.
 
         Arguments:
             - x: integer value with x coordinate.
             - y: integer value with y coordinate.
+            - smooth: bool, indicates is it needed to simulate smooth movement.
 
         Returns:
             - None

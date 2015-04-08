@@ -91,7 +91,7 @@ class IKeyboard(object):
         """
 
     @abstractmethod
-    def send(self, *args):
+    def send(self, *args, **kwargs):
         """Send key events as specified by Keys.
 
         If Key contains children Keys they will be recursively
@@ -99,6 +99,7 @@ class IKeyboard(object):
 
         Arguments:
             - *args: Keys to be send.
+            - **kwargs: "delay" between keys in seconds.
         Returns:
             - None
         """

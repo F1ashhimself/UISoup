@@ -236,7 +236,7 @@ class WinKeyboard(IKeyboard):
         x = Input(ctypes.c_ulong(1), ii_)
         send_input(1, ctypes.pointer(x), ctypes.sizeof(x))
 
-    def send(self, *args):
+    def send(self, *args, **kwargs):
         """Send key events as specified by Keys.
 
         If Key contains children Keys they will be recursively
@@ -248,6 +248,8 @@ class WinKeyboard(IKeyboard):
             - None
         """
 
+        delay = kwargs.get('delay', 0)
+
         for key in args:
             if key.children:
                 self.press_key_and_hold(key.code)
@@ -256,6 +258,7 @@ class WinKeyboard(IKeyboard):
             else:
                 self.press_key(key.code)
             self._wait_for_key_combo_to_be_processed()
+            sleep(delay)
 
     def _wait_for_key_combo_to_be_processed(self):
         # For key combinations timeout is needed to be processed.
