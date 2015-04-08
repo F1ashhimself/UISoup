@@ -55,6 +55,11 @@ Also adds :code:`ui-inspector` script that allows you to inspect UI elements. Ju
 **Changelog:**
 
 
+UISoup 2.4.2 (released 8 Apr 2015)
+
+* Additions: updated with smooth mouse move.
+* Additions: updated with delay between key press in Keyboard.send() method.
+
 UISoup 2.4.1 (released 4 Mar 2015)
 
 * Mac OS Additions: added new element role "AXLink".
