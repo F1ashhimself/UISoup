@@ -126,26 +126,25 @@ class WinMouse(IMouse):
         ctypes.windll.user32.mouse_event(
             flags, x_calc, y_calc, data, extra_info)
 
-    def move(self, x, y):
+    def move(self, x, y, smooth=True):
         WinUtils.verify_xy_coordinates(x, y)
 
-        self._do_event(
-            self._MOUSEEVENTF_MOVE + self._MOUSEEVENTF_ABSOLUTE, x, y, 0, 0)
+        old_x, old_y = self.get_position()
+
+        for i in xrange(100):
+            intermediate_x = old_x + (x - old_x) * (i + 1) / 100.0
+            intermediate_y = old_y + (y - old_y) * (i + 1) / 100.0
+            smooth and sleep(.01)
+
+            self._do_event(self._MOUSEEVENTF_MOVE + self._MOUSEEVENTF_ABSOLUTE,
+                           int(intermediate_x), int(intermediate_y), 0, 0)
 
     def drag(self, x1, y1, x2, y2, smooth=True):
         WinUtils.verify_xy_coordinates(x1, y1)
         WinUtils.verify_xy_coordinates(x2, y2)
 
         self.press_button(x1, y1, self.LEFT_BUTTON)
-
-        for i in xrange(100):
-            x = x1 + (x2 - x1) * (i + 1) / 100.0
-            y = y1 + (y2 - y1) * (i + 1) / 100.0
-            if smooth:
-                sleep(.01)
-
-            self.move(int(x), int(y))
-
+        self.move(x2, y2, smooth=smooth)
         self.release_button(self.LEFT_BUTTON)
 
     def press_button(self, x, y, button_name=LEFT_BUTTON):

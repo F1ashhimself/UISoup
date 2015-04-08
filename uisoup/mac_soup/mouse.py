@@ -109,10 +109,18 @@ class MacMouse(IMouse):
         for code in codes:
             self._do_event(code, x, y)
 
-    def move(self, x, y):
+    def move(self, x, y, smooth=True):
         MacUtils.verify_xy_coordinates(x, y)
 
-        self._do_event(CG.kCGEventMouseMoved, x, y)
+        old_x, old_y = self.get_position()
+
+        for i in xrange(100):
+            intermediate_x = old_x + (x - old_x) * (i + 1) / 100.0
+            intermediate_y = old_y + (y - old_y) * (i + 1) / 100.0
+            smooth and sleep(.01)
+
+            self._do_event(CG.kCGEventMouseMoved, int(intermediate_x),
+                           int(intermediate_y))
 
     def drag(self, x1, y1, x2, y2, smooth=True):
         MacUtils.verify_xy_coordinates(x1, y1)
@@ -130,7 +138,7 @@ class MacMouse(IMouse):
 
     def press_button(self, x, y, button_name=LEFT_BUTTON):
         MacUtils.verify_xy_coordinates(x, y)
-        MacUtils.verify_mouse_button_name(button_name, 
+        MacUtils.verify_mouse_button_name(button_name,
                                           self._SUPPORTED_BUTTON_NAMES)
 
         event_codes = self._compose_mouse_event_chain(
@@ -138,7 +146,7 @@ class MacMouse(IMouse):
         self._do_events(event_codes, x, y)
 
     def release_button(self, button_name=LEFT_BUTTON):
-        MacUtils.verify_mouse_button_name(button_name, 
+        MacUtils.verify_mouse_button_name(button_name,
                                           self._SUPPORTED_BUTTON_NAMES)
 
         event_codes = self._compose_mouse_event_chain(
@@ -147,7 +155,7 @@ class MacMouse(IMouse):
 
     def click(self, x, y, button_name=LEFT_BUTTON):
         MacUtils.verify_xy_coordinates(x, y)
-        MacUtils.verify_mouse_button_name(button_name, 
+        MacUtils.verify_mouse_button_name(button_name,
                                           self._SUPPORTED_BUTTON_NAMES)
 
         event_codes = self._compose_mouse_event_chain(
@@ -156,7 +164,7 @@ class MacMouse(IMouse):
 
     def double_click(self, x, y, button_name=LEFT_BUTTON):
         MacUtils.verify_xy_coordinates(x, y)
-        MacUtils.verify_mouse_button_name(button_name, 
+        MacUtils.verify_mouse_button_name(button_name,
                                           self._SUPPORTED_BUTTON_NAMES)
 
         self.click(x, y, button_name)
