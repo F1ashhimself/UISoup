@@ -167,8 +167,27 @@ class MacMouse(IMouse):
         MacUtils.verify_mouse_button_name(button_name,
                                           self._SUPPORTED_BUTTON_NAMES)
 
-        self.click(x, y, button_name)
-        self.click(x, y, button_name)
+        if button_name == self.LEFT_BUTTON:
+            button = CG.kCGMouseButtonLeft
+            down = CG.kCGEventLeftMouseDown
+            up = CG.kCGEventLeftMouseUp
+        if button_name == self.RIGHT_BUTTON:
+            button = CG.kCGMouseButtonRight
+            down = CG.kCGEventRightMouseDown
+            up = CG.kCGEventRightMouseUp
+
+        # http://www.codeitive.com/0iJqgkejVj/performing-a-double-click-using-cgeventcreatemouseevent.html
+        event = CG.CGEventCreateMouseEvent(None, down, (x, y), button)
+        CG.CGEventPost(CG.kCGHIDEventTap, event)
+        CG.CGEventSetType(event, up)
+        CG.CGEventPost(CG.kCGHIDEventTap, event)
+
+        CG.CGEventSetIntegerValueField(event, CG.kCGMouseEventClickState, 2)
+
+        CG.CGEventSetType(event, down)
+        CG.CGEventPost(CG.kCGHIDEventTap, event)
+        CG.CGEventSetType(event, up)
+        CG.CGEventPost(CG.kCGHIDEventTap, event)
 
     def get_position(self):
         position = CG.CGEventGetLocation(CG.CGEventCreate(None))

@@ -180,8 +180,13 @@ class WinMouse(IMouse):
         WinUtils.verify_mouse_button_name(button_name,
                                           self._SUPPORTED_BUTTON_NAMES)
 
-        self.click(x, y, button_name)
-        self.click(x, y, button_name)
+        self.move(x, y)
+        self._do_event(
+            self._compose_mouse_event(button_name, press=True, release=True),
+            0, 0, 0, 0)
+        self._do_event(
+            self._compose_mouse_event(button_name, press=True, release=True),
+            0, 0, 0, 0)
 
     def get_position(self):
         obj_point = ctypes.wintypes.POINT()
