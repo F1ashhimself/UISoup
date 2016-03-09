@@ -348,8 +348,9 @@ class WinElement(IElement):
 
         obj_name = comtypes.automation.BSTR()
 
-        self._i_accessible._IAccessible__com__get_accName(
-            obj_child_id, ctypes.byref(obj_name))
+        with WinUtils.execution_limit(3):
+            self._i_accessible._IAccessible__com__get_accName(
+                obj_child_id, ctypes.byref(obj_name))
         result = obj_name.value or ''
 
         return WinUtils.replace_inappropriate_symbols(result)

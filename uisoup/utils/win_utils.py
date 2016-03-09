@@ -17,9 +17,31 @@
 
 __author__ = 'f1ashhimself@gmail.com'
 
+import signal
+from contextlib import contextmanager
 
 from ..utils import _Utils
+from .. import TooSaltyUISoupException
 
 
 class WinUtils(_Utils):
-    pass
+
+    @classmethod
+    @contextmanager
+    def execution_limit(cls, seconds):
+        """
+        Limit execution of function to given value of seconds.
+
+        Arguments:
+            - seconds: int, limit time in seconds.
+        """
+
+        def signal_handler(signum, frame):
+            raise TooSaltyUISoupException('Time limit %s seconds was '
+                                          'exceeded.' % seconds)
+        signal.signal(signal.SIGALRM, signal_handler)
+        signal.alarm(seconds)
+        try:
+            yield
+        finally:
+            signal.alarm(0)
