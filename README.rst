@@ -1,10 +1,10 @@
 UISoup
 ======
 
-.. image:: https://pypip.in/v/UISoup/badge.png
+.. image:: https://img.shields.io/pypi/v/UISoup.svg
         :alt: Release Status
         :target: https://pypi.python.org/pypi/UISoup
-.. image:: https://pypip.in/d/UISoup/badge.png
+.. image:: https://img.shields.io/pypi/dm/UISoup.svg
         :alt: Downloads
         :target: https://pypi.python.org/pypi/UISoup
 
@@ -54,6 +54,9 @@ Also adds :code:`ui-inspector` script that allows you to inspect UI elements. Ju
 
 **Changelog:**
 
+UISoup 2.4.4 (released 09 Mar 2016)
+
+* Windows Additions: fixed issue when UISOUP hangs while asking for acc_name on crashed window.
 
 UISoup 2.4.3 (released 15 Apr 2015)
 
