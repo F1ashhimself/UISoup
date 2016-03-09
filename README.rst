@@ -1,10 +1,10 @@
 UISoup
 ======
 
-.. image:: https://pypip.in/v/UISoup/badge.png
+.. image:: https://img.shields.io/pypi/v/UISoup.svg
         :alt: Release Status
         :target: https://pypi.python.org/pypi/UISoup
-.. image:: https://pypip.in/d/UISoup/badge.png
+.. image:: https://img.shields.io/pypi/dm/UISoup.svg
         :alt: Downloads
         :target: https://pypi.python.org/pypi/UISoup
 
