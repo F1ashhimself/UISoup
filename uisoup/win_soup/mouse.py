@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-#    Copyright (c) 2014 Max Beloborodko.
+#    Copyright (c) 2014-2017 Max Beloborodko.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -22,6 +22,9 @@ from time import sleep
 
 from ..interfaces.i_mouse import IMouse
 from ..utils.win_utils import WinUtils
+
+if WinUtils.is_python_3():
+    xrange = range
 
 
 class WinMouse(IMouse):
@@ -49,18 +52,13 @@ class WinMouse(IMouse):
         """
         Composes mouse event based on button name and action flags.
 
-        Arguments:
-            - name: string value holding mouse button name. Should be one of:
-            'b1c' - left button or 'b3c' - right button.
-            - press: boolean flag indicating whether event should indicate
-            button press.
-            - release: boolean flag indicating whether event should indicate
-            button release.
-
-        Returns:
-            - None
+        :param str name: mouse button name. Should be one
+        of: 'b1c' - left button or 'b3c' - right button.
+        :param bool press: flag indicating whether event should indicate 
+        button press.
+        :param bool release: flag indicating whether event should indicate
+        button release.
         """
-
         mouse_event = 0
         if name == self.LEFT_BUTTON:
             if press:
@@ -79,9 +77,8 @@ class WinMouse(IMouse):
         """
         Generates mouse event fo a special coordinate.
 
-        Arguments:
-            - flags: integer value holding flags that describes mouse events to
-            trigger. Can be a combination of:
+        :param int flags: integer value holding flags that describes mouse 
+        events to trigger. Can be a combination of:
                 _MOUSEEVENTF_MOVE = 0x0001 # mouse move
                 _MOUSEEVENTF_LEFTDOWN = 0x0002 # left button down
                 _MOUSEEVENTF_LEFTUP = 0x0004 # left button up
@@ -94,9 +91,9 @@ class WinMouse(IMouse):
                 _MOUSEEVENTF_XUP = 0x0100 # X button up
                 _MOUSEEVENTF_WHEEL = 0x0800 # wheel button is rotated
                 _MOUSEEVENTF_HWHEEL = 0x01000 # wheel button is tilted
-            - x: integer value with x coordinate.
-            - y: integer value with y coordinate.
-            - data: integer value holding additional event data, for ex.:
+        :param int x: x coordinate.
+        :param int y: y coordinate.
+        :param int data: value holding additional event data, for ex.:
               * If flags contains _MOUSEEVENTF_WHEEL, then data specifies the
                 amount of wheel movement. A positive value indicates that the
                 wheel was rotated forward, away from the user; a negative
@@ -112,17 +109,13 @@ class WinMouse(IMouse):
                 value may be any combination of the following flags.
               * If flags is not _MOUSEEVENTF_WHEEL, _MOUSEEVENTF_XDOWN, or
                 _MOUSEEVENTF_XUP, then data should be zero.
-            - extra_info: integer value with additional value associated with
-            the mouse event.
-
-        Returns:
-            - None
+        :param int extra_info: value with additional value associated with
+        the mouse event.
         """
-
         x_metric = ctypes.windll.user32.GetSystemMetrics(self._SM_CXSCREEN)
         y_metric = ctypes.windll.user32.GetSystemMetrics(self._SM_CYSCREEN)
-        x_calc = 65536L * x / x_metric + 1
-        y_calc = 65536L * y / y_metric + 1
+        x_calc = 65536 * x / x_metric + 1
+        y_calc = 65536 * y / y_metric + 1
         ctypes.windll.user32.mouse_event(
             flags, x_calc, y_calc, data, extra_info)
 

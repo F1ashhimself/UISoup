@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-#    Copyright (c) 2014 Max Beloborodko.
+#    Copyright (c) 2014-2017 Max Beloborodko.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -26,7 +26,8 @@ pointer_unsigned_long = ctypes.POINTER(ctypes.c_ulong)
 
 
 class KeyboardInput(ctypes.Structure):
-    """Keyboard input C struct definition.
+    """
+    Keyboard input C struct definition.
     """
 
     _fields_ = [("wVk", ctypes.c_ushort),
@@ -37,7 +38,8 @@ class KeyboardInput(ctypes.Structure):
 
 
 class HardwareInput(ctypes.Structure):
-    """Hardware input C struct definition.
+    """
+    Hardware input C struct definition.
     """
 
     _fields_ = [("uMsg", ctypes.c_ulong),
@@ -46,7 +48,8 @@ class HardwareInput(ctypes.Structure):
 
 
 class MouseInput(ctypes.Structure):
-    """Hardware input C struct definition.
+    """
+    Hardware input C struct definition.
     """
 
     _fields_ = [("dx", ctypes.c_long),
@@ -58,7 +61,8 @@ class MouseInput(ctypes.Structure):
 
 
 class EventStorage(ctypes.Union):
-    """Event storage C struct definition.
+    """
+    Event storage C struct definition.
     """
 
     _fields_ = [("ki", KeyboardInput),
@@ -67,7 +71,8 @@ class EventStorage(ctypes.Union):
 
 
 class Input(ctypes.Structure):
-    """Input C struct definition.
+    """
+    Input C struct definition.
     """
 
     _fields_ = [("type", ctypes.c_ulong),
@@ -77,7 +82,8 @@ class Input(ctypes.Structure):
 class WinKeyboard(IKeyboard):
 
     class _KeyCodes(object):
-        """ Holder for Windows keyboard codes stored as Keys.
+        """
+        Holder for Windows keyboard codes stored as Keys.
         """
 
         BACKSPACE = Key(0x08)  # BACKSPACE key
@@ -191,28 +197,20 @@ class WinKeyboard(IKeyboard):
     codes = _KeyCodes
 
     def press_key(self, hex_key_code):
-        """Presses (and releases) key specified by a hex code.
-
-        Arguments:
-            - hex_key_code: integer value holding hexadecimal code for a key to
-            be pressed.
-        Returns:
-            - None
         """
+        Presses (and releases) key specified by a hex code.
 
+        :param int hex_key_code: hexadecimal code for a key to be pressed.
+        """
         self.press_key_and_hold(hex_key_code)
         self.release_key(hex_key_code)
 
     def press_key_and_hold(self, hex_key_code):
-        """Presses (and holds) key specified by a hex code.
-
-        Arguments:
-            - hex_key_code: integer value holding hexadecimal code for a key to
-            be pressed.
-        Returns:
-            - None
         """
+        Presses (and holds) key specified by a hex code.
 
+        :param int hex_key_code: hexadecimal code for a key to be pressed.
+        """
         extra = ctypes.c_ulong(0)
         ii_ = EventStorage()
         ii_.ki = KeyboardInput(hex_key_code, 0x48, 0, 0, ctypes.pointer(extra))
@@ -220,15 +218,11 @@ class WinKeyboard(IKeyboard):
         send_input(1, ctypes.pointer(x), ctypes.sizeof(x))
 
     def release_key(self, hex_key_code):
-        """Releases key specified by a hex code.
-
-        Arguments:
-            - hex_key_code: integer value holding hexadecimal code for a key to
-            be pressed.
-        Returns:
-            - None
         """
+        Releases key specified by a hex code.
 
+        :param int hex_key_code: hexadecimal code for a key to be pressed.
+        """
         extra = ctypes.c_ulong(0)
         ii_ = EventStorage()
         ii_.ki = KeyboardInput(
@@ -237,17 +231,14 @@ class WinKeyboard(IKeyboard):
         send_input(1, ctypes.pointer(x), ctypes.sizeof(x))
 
     def send(self, *args, **kwargs):
-        """Send key events as specified by Keys.
+        """
+        Send key events as specified by Keys.
 
         If Key contains children Keys they will be recursively
         processed with current Key code pressed as a modifier key.
 
-        Arguments:
-            - *args: Keys to be send.
-        Returns:
-            - None
+        :param args: keys to send.
         """
-
         delay = kwargs.get('delay', 0)
 
         for key in args:

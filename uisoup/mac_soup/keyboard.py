@@ -26,9 +26,9 @@ from ..interfaces.i_keyboard import Key, IKeyboard
 class MacKeyboard(IKeyboard):
 
     class _KeyCodes(object):
-        """ Holder for Macintosh keyboard codes stored as Keys.
         """
-
+        Holder for Macintosh keyboard codes stored as Keys.
+        """
         LEFT_ALT = Key(0x3A)  # Left ALT key
         RIGHT_ALT = Key(0x3D)  # Right ALT key
         LEFT_SHIFT = Key(0x38)  # Left SHIFT key
@@ -135,58 +135,43 @@ class MacKeyboard(IKeyboard):
     codes = _KeyCodes
 
     def press_key(self, hex_key_code):
-        """Presses (and releases) key specified by a hex code.
-
-        Arguments:
-            - hex_key_code: integer value holding hexadecimal code for a key to
-            be pressed.
-        Returns:
-            - None
         """
+        Presses (and releases) key specified by a hex code.
 
+        :param int hex_key_code: hexadecimal code for a key to be pressed.
+        """
         self.press_key_and_hold(hex_key_code)
         self.release_key(hex_key_code)
 
     def press_key_and_hold(self, hex_key_code):
-        """Presses (and holds) key specified by a hex code.
-
-        Arguments:
-            - hex_key_code: integer value holding hexadecimal code for a key to
-            be pressed.
-        Returns:
-            - None
         """
+        Presses (and holds) key specified by a hex code.
 
+        :param int hex_key_code: hexadecimal code for a key to be pressed.
+        """
         CG.CGEventPost(
             CG.kCGHIDEventTap,
             CG.CGEventCreateKeyboardEvent(None, hex_key_code, True))
 
     def release_key(self, hex_key_code):
-        """Releases key specified by a hex code.
-
-        Arguments:
-            - hex_key_code: integer value holding hexadecimal code for a key to
-            be pressed.
-        Returns:
-            - None
         """
+        Releases key specified by a hex code.
 
+        :param int hex_key_code: hexadecimal code for a key to be pressed.
+        """
         CG.CGEventPost(
             CG.kCGHIDEventTap,
             CG.CGEventCreateKeyboardEvent(None, hex_key_code, False))
 
     def send(self, *args, **kwargs):
-        """Send key events as specified by Keys.
+        """
+        Send key events as specified by Keys.
 
         If Key contains children Keys they will be recursively
         processed with current Key code pressed as a modifier key.
 
-        Arguments:
-            - *args: Keys to be send.
-        Returns:
-            - None
+        :param args: Keys to send.
         """
-
         delay = kwargs.get('delay', 0)
 
         for key in args:

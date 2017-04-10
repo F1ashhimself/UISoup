@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
-from setuptools import setup, find_packages
 from os import path
+
+from pip.req import parse_requirements
+from setuptools import setup
 
 
 def package_env(file_name, strict=False):
@@ -14,15 +16,16 @@ def package_env(file_name, strict=False):
 if __name__ == '__main__':
     setup(
         name='UISoup',
-        version='2.4.3',
+        version='2.5.0',
         description='Cross Platform GUI Test Automation tool.',
         long_description=package_env('README.rst'),
         author='Max Beloborodko',
         author_email='f1ashhimself@gmail.com',
-        packages=['uisoup'] + ['.'.join(('uisoup', p)) for p in
-                               find_packages('uisoup')],
+        packages=['uisoup'],
         include_package_data=True,
-        install_requires=['comtypes'],
+        install_requires=[str(ir.req) for ir in
+                          parse_requirements('requirements.txt',
+                                             session=False)],
         zip_safe=False,
         entry_points={
             'console_scripts': [

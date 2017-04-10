@@ -24,6 +24,9 @@ from time import sleep
 from ..interfaces.i_mouse import IMouse
 from ..utils.mac_utils import MacUtils
 
+if MacUtils.is_python_3():
+    xrange = range
+
 
 class MacMouse(IMouse):
 
@@ -44,18 +47,13 @@ class MacMouse(IMouse):
         """
         Composes chain of mouse events based on button name and action flags.
 
-        Arguments:
-            - name: string value holding mouse button name. Should be one of:
-            'b1c' - left button or 'b3c' - right button.
-            - press: boolean flag indicating whether event should indicate
-            button press.
-            - release: boolean flag indicating whether event should indicate
-            button release.
-
-        Returns:
-            - None
+        :param str name: Mouse button name. Should be one of: 
+        'b1c' - left button or 'b3c' - right button.
+        :param bool press: flag indicating whether event should indicate
+        button press.
+        :param bool release: indicating whether event should indicate
+        button release.
         """
-
         mouse_event_chain = []
         if name == self.LEFT_BUTTON:
             if press:
@@ -74,14 +72,10 @@ class MacMouse(IMouse):
         """
         Generates mouse event for a special coordinate.
 
-        Arguments:
-            - code: integer value holding mouse event code.
-            - x: integer value with x coordinate.
-            - y: integer value with y coordinate.
-        Returns:
-            - None
+        :param int code: mouse event code.
+        :param int x: x coordinate.
+        :param int y: y coordinate.
         """
-
         if code in self._LEFT_BUTTON_CODES:
             button = CG.kCGMouseButtonLeft
         elif code in self._RIGHT_BUTTON_CODES:
@@ -98,14 +92,10 @@ class MacMouse(IMouse):
         """
         Generates a sequence of mouse events for a special coordinate.
 
-        Arguments:
-            - codes: list of integer values holding mouse event codes.
-            - x: integer value with x coordinate.
-            - y: integer value with y coordinate.
-        Returns:
-            - None
+        :param list[int] codes: mouse event code.
+        :param int x: x coordinate.
+        :param int y: y coordinate.
         """
-
         for code in codes:
             self._do_event(code, x, y)
 
