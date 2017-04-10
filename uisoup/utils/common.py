@@ -65,7 +65,7 @@ class CommonUtils(object):
         :param x: x variable.
         :param y: y variable.
         """
-        if not isinstance(x, int) or not isinstance(y, int):
+        if not isinstance(x, (int, float)) or not isinstance(y, (int, float)):
             raise TooSaltyUISoupException(
                 'x and y arguments should hold int coordinates.')
 

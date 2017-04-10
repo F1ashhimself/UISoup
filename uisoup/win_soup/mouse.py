@@ -117,7 +117,7 @@ class WinMouse(IMouse):
         x_calc = 65536 * x / x_metric + 1
         y_calc = 65536 * y / y_metric + 1
         ctypes.windll.user32.mouse_event(
-            flags, x_calc, y_calc, data, extra_info)
+            flags, int(x_calc), int(y_calc), data, extra_info)
 
     def move(self, x, y, smooth=True):
         WinUtils.verify_xy_coordinates(x, y)
