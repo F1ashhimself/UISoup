@@ -55,7 +55,7 @@ Also adds :code:`ui-inspector` script that allows you to inspect UI elements. Ju
 **Changelog:**
 
 
-UISoup 2.5.2 (released 10 Apr 2017)
+UISoup 2.5.3 (released 10 Apr 2017)
 
 * Additions: added support for Python3.
 * Additions: docstrings were updated.
