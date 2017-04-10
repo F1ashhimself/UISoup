@@ -1,6 +1,6 @@
 # !/usr/bin/env python
 
-#    Copyright (c) 2014 Max Beloborodko.
+#    Copyright (c) 2014-2017 Max Beloborodko.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -67,14 +67,12 @@ class MacElement(IElement):
         """
         Constructor.
 
-        Arguments:
-            - obj_selector: string, object selector.
-            - layer_num: int, layer number. I.e. main window will be layer 0.
-            - process_name: string, process
-            - process_id: int, process id.
-            - class_id: string, element class identifier.
+        :param str obj_selector: object selector.
+        :param int layer_num: layer number. I.e. main window will be layer 0.
+        :param str process_name: process name.
+        :param str process_id: process id.
+        :param str class_id: element class identifier.
         """
-
         self._object_selector = obj_selector
         self._layer_num = layer_num
         self._proc_id = process_id
@@ -88,7 +86,6 @@ class MacElement(IElement):
         """
         Property for element properties.
         """
-
         if not self._cached_properties:
             self._cached_properties = \
                 MacUtils.ApplescriptExecutor.get_element_properties(
@@ -101,20 +98,15 @@ class MacElement(IElement):
         """
         Property for element role.
         """
-
         return self._properties.get('AXRole', None)
 
     def _find_windows_by_same_proc(self):
         """
         Find window by same process id.
 
-        Arguments:
-            - None
-
-        Returns:
-            - list of windows.
+        :rtype: list[uisoup.interfaces.i_element.IElement]
+        :return: list of windows.
         """
-
         axunknown_windows = \
             MacUtils.ApplescriptExecutor.get_axunknown_windows(self._proc_name)
         axdialog_windows = \
@@ -300,13 +292,11 @@ class MacElement(IElement):
         """
         Find child element in the cache.
 
-        Arguments:
-            - only_visible: bool, flag that indicates will we search only
-
-        Returns:
-            - Yield found element.
+        :param bool only_visible: flag that indicates will we search only 
+        visible.
+        :rtype: uisoup.interfaces.i_element.IElement
+        :return: yield found element.
         """
-
         for obj_element in self._cached_children:
             if obj_element._match(only_visible, **kwargs):
                 yield obj_element
@@ -315,13 +305,11 @@ class MacElement(IElement):
         """
         Find child element.
 
-        Arguments:
-            - only_visible: bool, flag that indicates will we search only
-
-        Returns:
-            - Yield found element.
+        :param bool only_visible: flag that indicates will we search only 
+        visible.
+        :rtype: uisoup.interfaces.i_element.IElement
+        :return: yield found element.
         """
-
         lst_queue = list(self)
 
         if self.is_top_level_window:
@@ -340,14 +328,20 @@ class MacElement(IElement):
 
     def find(self, only_visible=True, **kwargs):
         try:
-            return self.__findcacheiter(only_visible,
-                                        **kwargs).next()
+            iter_ = next(self.__findcacheiter(only_visible, **kwargs)) if \
+                MacUtils.is_python_3() else self.__findcacheiter(
+                only_visible, **kwargs).next()
+            return iter_
         except StopIteration:
             try:
-                return self._finditer(only_visible,
-                                      **kwargs).next()
+                iter_ = next(self._finditer(only_visible, **kwargs)) if \
+                    MacUtils.is_python_3() else self._finditer(
+                    only_visible, **kwargs).next()
+                return iter_
             except StopIteration:
-                attrs = ['%s=%s' % (k, v) for k, v in kwargs.iteritems()]
+                items_ = kwargs.items() if MacUtils.is_python_3() else \
+                    kwargs.iteritems()
+                attrs = ['%s=%s' % (k, v) for k, v in items_]
                 raise TooSaltyUISoupException(
                     'Can\'t find object with attributes "%s".' %
                     '; '.join(attrs))

@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#    Copyright (c) 2014 Max Beloborodko.
+#    Copyright (c) 2014-2017 Max Beloborodko.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -29,6 +29,9 @@ from .mouse import MacMouse
 from .keyboard import MacKeyboard
 from .. import TooSaltyUISoupException
 
+if MacUtils.is_python_3():
+    unicode = str
+
 
 class MacSoup(ISoup):
 
@@ -46,8 +49,14 @@ class MacSoup(ISoup):
             window = self.get_window(window_handle)
 
             # Sorting by layer from big to small.
-            sorted_objects = sorted(window.findall(),
-                                    lambda x, y: y._layer_num - x._layer_num)
+            if MacUtils.is_python_3():
+                sorted_objects = \
+                    sorted(window.findall(), key=lambda x: x._layer_num,
+                           reverse=True)
+            else:
+                sorted_objects = \
+                    sorted(window.findall(),
+                           lambda x, y: y._layer_num - x._layer_num)
 
             cur_x, cur_y = self.mouse.get_position()
             for element in sorted_objects:

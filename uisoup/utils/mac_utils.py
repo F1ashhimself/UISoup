@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#    Copyright (c) 2014 Max Beloborodko.
+#    Copyright (c) 2014-2017 Max Beloborodko.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -22,8 +22,11 @@ import struct
 from AppKit import NSAppleScript
 from Carbon import AppleEvents
 
-from ..utils import _Utils
+from ..utils.common import CommonUtils
 from .. import TooSaltyUISoupException
+
+if CommonUtils.is_python_3():
+    basestring = str
 
 
 class AppleEventDescriptor(object):
@@ -183,21 +186,18 @@ class AppleEventDescriptor(object):
         return specifier
 
 
-class MacUtils(_Utils):
+class MacUtils(CommonUtils):
 
     @classmethod
     def execute_applescript_command(cls, cmd):
         """
         Executes applescript command.
 
-        Arguments:
-            - cmd: string or list, command or commands that should be
-            executed.
-
-        Returns:
-            - AppleEventDescriptor with result of executed command.
+        :param str | list[str] cmd: command or commands that should be
+        executed.
+        :rtype: AppleEventDescriptor
+        :return: AppleEventDescriptor with result of executed command.
         """
-
         cmd = '\n'.join([cmd] if isinstance(cmd, basestring) else cmd)
 
         script = NSAppleScript.alloc().initWithSource_(cmd)
@@ -218,13 +218,9 @@ class MacUtils(_Utils):
             """
             Gets front window name.
 
-            Arguments:
-                - None
-
-            Returns:
-                - string with combined name (window name + process name).
+            :rtype: str
+            :return: combined name (window name + process name).
             """
-
             cmd = ['tell application "System Events" to tell process (name of first application process whose frontmost is true)',
                    '  return (1st window whose value of attribute "AXMain" is true)',
                    'end tell']
@@ -239,14 +235,12 @@ class MacUtils(_Utils):
             """
             Gets apple event descriptor.
 
-            Arguments:
-                - obj_selector: string, object selector.
-                - process_name: string, name of process.
-
-            Returns:
-                - instance of AppleEventDescriptor.
+            :param str obj_selector: object selector.
+            :param str process_name: name of process.
+            
+            :rtype: AppleEventDescriptor
+            :return: apple event descriptor.
             """
-
             cmd = ['tell application "System Events" to tell process "%s"' % process_name,
                    '  set visible to true',
                    '  return %s' % obj_selector,
@@ -259,17 +253,14 @@ class MacUtils(_Utils):
             """
             Gets all direct children elements.
 
-            Arguments:
-                - obj_selector: string, object selector.
-                - layer_num: int, layer number.
-                I.e. main window will be layer 0.
-                - process_name: string, name of process.
-
-            Returns:
-                - Tuple that contains dict of element selectors and
-                elements layer number.
+            :param str obj_selector: object selector.
+            :param str layer_num: layer number, i.e. main window will be 
+            layer 0.
+            :param str process_name: name of process.
+            :rtype: tuple[dict]
+            :return: Tuple that contains dict of element selectors and
+            elements layer number.
             """
-
             cmd = ['tell application "System Events" to tell process "%s"' % process_name,
                    '  set visible to true',
                    '  set uiElement to %s' % obj_selector,
@@ -301,14 +292,11 @@ class MacUtils(_Utils):
             """
             Gets all element properties.
 
-            Arguments:
-                - obj_selector: string, object selector.
-                - process_name: string, name of process.
-
-            Returns:
-                - Dict with element properties.
+            :param str obj_selector: object selector.
+            :param str process_name: name of process.
+            :rtype: dict
+            :return: Dict with element properties.
             """
-
             cmd = ['tell application "System Events" to tell application process "%s"' % process_name,
                    '  set visible to true',
                    '  set res to {}',
@@ -342,18 +330,15 @@ class MacUtils(_Utils):
             """
             Sets element attribute.
 
-            Arguments:
-                - obj_selector: string, object selector.
-                - attribute_name: string, name of attribute:
-                - value: string, value.
-                - process_name: string, name of process.
-                - string_value: bool, indicates will be value wrapped in
-                brackets.
-
-            Returns:
-                - Boolean indicator whether was operation successful or not.
+            :param str obj_selector: object selector.
+            :param str attribute_name: name of attribute.
+            :param str value: name of value.
+            :param str process_name: name of process.
+            :param bool string_value: indicates will be value wrapped in 
+            brackets.
+            :rtype: bool
+            :return: indicator whether was operation successful or not.
             """
-
             value = '"%s"' % value if string_value else value
             cmd = ['tell application "System Events" to tell application process "%s"' % process_name,
                    '  set value of attribute "%s" of %s to %s' % (attribute_name, obj_selector, value),
@@ -372,11 +357,9 @@ class MacUtils(_Utils):
             """
             Gets AXUnknown windows by given process name.
 
-            Arguments:
-                - process_name: string, name of process.
-
-            Returns:
-                - List of AppleEventDescriptor elements.
+            :param str process_name: name of process.
+            :rtype: list
+            :return: list of AppleEventDescriptor elements.
             """
 
             cmd = ['tell application "System Events" to tell process "%s"' % process_name,
@@ -397,11 +380,9 @@ class MacUtils(_Utils):
             """
             Gets AXDialog windows by given process name.
 
-            Arguments:
-                - process_name: string, name of process.
-
-            Returns:
-                - List of AppleEventDescriptor elements.
+            :param str process_name: name of process.
+            :rtype: list
+            :return: list of AppleEventDescriptor elements.
             """
 
             cmd = ['tell application "System Events" to tell process "%s"' % process_name,

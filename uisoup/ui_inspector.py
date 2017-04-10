@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#    Copyright (c) 2014 Max Beloborodko.
+#    Copyright (c) 2014-2017 Max Beloborodko.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -33,13 +33,10 @@ class UIInspector(object):
         """
         Gets current element info.
 
-        Arguments:
-            - obj_element: object element.
-
-        Returns:
-            - String with element attributes.
+        :param obj_element: object element.
+        :rtype: str
+        :return: element attributes.
         """
-
         dict_info = {}
         lst_attribute_name_list = ['acc_role_name',
                                    'acc_name',
@@ -65,12 +62,6 @@ class UIInspector(object):
 def main():
     """
     Starts UI Inspector.
-
-    Arguments:
-        - None
-
-    Returns:
-        - None
     """
 
     try:
@@ -85,7 +76,7 @@ def main():
                 printable_data = \
                     UIInspector.get_current_element_info(obj_element)
                 system(clear_command)
-                print printable_data
+                print(printable_data)
             sleep(0.5)
     except KeyboardInterrupt:
         system('cls')

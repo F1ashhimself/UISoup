@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-#    Copyright (c) 2014 Max Beloborodko.
+#    Copyright (c) 2014-2017 Max Beloborodko.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -43,12 +43,10 @@ class ISoup(object):
         """
         Gets object by coordinates.
 
-        Arguments:
-            - x: int, x coordinate.
-            - y: int, y coordinate.
-
-        Returns:
-            - Object that was found by given coordinates.
+        :param int x: x coordinate.
+        :param int y: y coordinate.
+        :rtype: uisoup.interfaces.i_element.IElement
+        :return: object that was found by given coordinates.
         """
 
     @abstractmethod
@@ -56,12 +54,10 @@ class ISoup(object):
         """
         Verifies is window exists.
 
-        Arguments:
-            - obj_handle: window name (string) or window handler (int)
-            otherwise Desktop Window will be checked.
-
-        Returns:
-            - True if window exists otherwise False.
+        :param str | int obj_handle: window name (string) or window 
+        handler (int) otherwise Desktop Window will be checked.
+        :rtype: bool
+        :return: True if window exists otherwise False.
         """
 
     @abstractmethod
@@ -69,12 +65,10 @@ class ISoup(object):
         """
         Gets window.
 
-        Arguments:
-            - obj_handle: window name (string) or window handler (int)
-            otherwise Desktop Window will be returned
-
-        Returns:
-            - Window object.
+        :param str | int obj_handle: window name (string) or window 
+        handler (int) otherwise Desktop Window will be checked.
+        :rtype: uisoup.interfaces.i_element.IElement
+        :return: window object.
         """
 
     @abstractmethod
@@ -82,11 +76,8 @@ class ISoup(object):
         """
         Gets list of visible windows.
 
-        Arguments:
-            - None
-
-        Returns:
-            - List of visible windows.
+        :rtype: list[uisoup.interfaces.i_element.IElement]
+        :return: list of visible windows.
         """
 
     @abstractmethod
@@ -94,9 +85,7 @@ class ISoup(object):
         """
         Gets list of visible objects for specified window.
 
-        Arguments:
-            - window_name: string, window name.
-
-        Returns:
-            - List of visible windows.
+        :param str window_name: window name.
+        :rtype: list[uisoup.interfaces.i_element.IElement]
+        :return: list of visible windows.
         """
