@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-#    Copyright (c) 2014 Max Beloborodko.
+#    Copyright (c) 2014-2017 Max Beloborodko.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -22,7 +22,10 @@ from types import FunctionType
 from abc import ABCMeta, abstractmethod, abstractproperty
 import xml.dom.minidom
 
-from ..utils import _Utils
+from ..utils.common import CommonUtils
+
+if CommonUtils.is_python_3():
+    unicode = str
 
 
 class IElement(object):
@@ -37,14 +40,9 @@ class IElement(object):
         """
         Clicks by left mouse button on this object.
 
-        Arguments:
-            - x_offset: int, x offset, if not defined half of element width
-            will be used.
-            - y_offset: int, y offset, if not defined half of element height
-            will be used.
-
-        Returns:
-            - None
+        :param int x_offset: if not defined half of element width will be used.
+        :param int y_offset: y offset, if not defined half of element height 
+        will be used.
         """
 
     @abstractmethod
@@ -52,14 +50,9 @@ class IElement(object):
         """
         Clicks by right mouse button on this object.
 
-        Arguments:
-            - x_offset: int, x offset, if not defined half of element width
-            will be used.
-            - y_offset: int, y offset, if not defined half of element height
-            will be used.
-
-        Returns:
-            - None
+        :param int x_offset: if not defined half of element width will be used.
+        :param int y_offset: y offset, if not defined half of element height 
+        will be used.
         """
 
     @abstractmethod
@@ -67,14 +60,9 @@ class IElement(object):
         """
         Double clicks by left mouse button on this object.
 
-        Arguments:
-            - x_offset: int, x offset, if not defined half of element width
-            will be used.
-            - y_offset: int, y offset, if not defined half of element height
-            will be used.
-
-        Returns:
-            - None
+        :param int x_offset: if not defined half of element width will be used.
+        :param int y_offset: y offset, if not defined half of element height 
+        will be used
         """
 
     @abstractmethod
@@ -82,17 +70,12 @@ class IElement(object):
         """
         Drags this object to coordinates.
 
-        Arguments:
-            - x: int, x coordinate.
-            - y: int, y coordinate.
-            - x_offset: int, x offset, if not defined half of element width
-            will be used.
-            - y_offset: int, y offset, if not defined half of element height
-            will be used.
-            - smooth: bool, indicates is it needed to simulate smooth movement.
-
-        Returns:
-            - None
+        :param int x: x coordinate.
+        :param int y: y coordinate.
+        :param int x_offset: if not defined half of element width will be used.
+        :param int y_offset: if not defined half of element height 
+        will be used.
+        :param bool smooth: indicates is it needed to simulate smooth movement.
         """
 
     @abstractproperty
@@ -154,12 +137,6 @@ class IElement(object):
     def set_focus(self):
         """
         Sets focus to element.
-
-        Arguments:
-            - None
-
-        Returns:
-            - None
         """
 
     @abstractproperty
@@ -186,11 +163,7 @@ class IElement(object):
         """
         Sets element value.
 
-        Arguments:
-            - value: string, element value.
-
-        Returns:
-            - None
+        :param str value: element value.
         """
 
     @abstractproperty
@@ -232,22 +205,20 @@ class IElement(object):
         """
         Finds first child element.
 
-        Arguments:
-            - only_visible: bool, flag that indicates will we search only
-            through visible elements.
-            - role: string or lambda e.g. lambda x: x == 13
-            - name: string or lambda.
-            - c_name: string or lambda.
-            - location: string or lambda.
-            - value: string or lambda.
-            - description: string or lambda.
-            - selection: string or lambda.
-            - role_name: string or lambda.
-            - parent_count: string or lambda.
-            - child_count: string or lambda.
-
-        Returns:
-            - Element that was found otherwise exception will be raised.
+        :param bool only_visible: flag that indicates will we search only
+        through visible elements.
+        :param str role: string or lambda e.g. lambda x: x == 13
+        :param str name: string or lambda.
+        :param str c_name: string or lambda.
+        :param str location: string or lambda.
+        :param str value: string or lambda.
+        :param str description: string or lambda.
+        :param str selection: string or lambda.
+        :param str role_name: string or lambda.
+        :param str parent_count: string or lambda.
+        :param str child_count: string or lambda.
+        :rtype: IElement
+        :return: Element that was found otherwise exception will be raised.
         """
 
     @abstractmethod
@@ -255,22 +226,20 @@ class IElement(object):
         """
         Find all child element.
 
-        Arguments:
-            - only_visible: bool, flag that indicates will we search only
-            through visible elements.
-            - role: string or lambda e.g. lambda x: x == 13
-            - name: string or lambda.
-            - c_name: string or lambda.
-            - location: string or lambda.
-            - value: string or lambda.
-            - description: string or lambda.
-            - selection: string or lambda.
-            - role_name: string or lambda.
-            - parent_count: string or lambda.
-            - child_count: string or lambda.
-
-        Returns:
-            - List of all elements that was found otherwise None.
+        :param bool only_visible: flag that indicates will we search only
+        through visible elements.
+        :param str role: string or lambda e.g. lambda x: x == 13
+        :param str name: string or lambda.
+        :param str c_name: string or lambda.
+        :param str location: string or lambda.
+        :param str value: string or lambda.
+        :param str description: string or lambda.
+        :param str selection: string or lambda.
+        :param str role_name: string or lambda.
+        :param str parent_count: string or lambda.
+        :param str child_count: string or lambda.
+        :rtype: list[IElement]
+        :return: List of all elements that was found otherwise None.
         """
 
     @abstractmethod
@@ -278,33 +247,26 @@ class IElement(object):
         """
         Verifies is object exists.
 
-        Arguments:
-            - role: string or lambda e.g. lambda x: x == 13
-            - name: string or lambda.
-            - c_name: string or lambda.
-            - location: string or lambda.
-            - value: string or lambda.
-            - description: string or lambda.
-            - selection: string or lambda.
-            - role_name: string or lambda.
-            - parent_count: string or lambda.
-            - child_count: string or lambda.
-
-        Returns:
-            - True if object exists otherwise False.
+        :param bool only_visible: flag that indicates will we search only
+        through visible elements.
+        :param str role: string or lambda e.g. lambda x: x == 13
+        :param str name: string or lambda.
+        :param str c_name: string or lambda.
+        :param str location: string or lambda.
+        :param str value: string or lambda.
+        :param str description: string or lambda.
+        :param str selection: string or lambda.
+        :param str role_name: string or lambda.
+        :param str parent_count: string or lambda.
+        :param str child_count: string or lambda.
+        :rtype: bool
+        :return: True if object exists otherwise False.
         """
 
     def toxml(self):
         """
         Convert Element Tree to XML.
-
-        Arguments:
-            - None
-
-        Returns:
-            - None
         """
-
         obj_document = xml.dom.minidom.Document()
         lst_queue = [(self, obj_document)]
 
@@ -345,23 +307,21 @@ class IElement(object):
         """
         Match method.
 
-        Arguments:
-            - only_visible: bool, flag that indicates will we search only
-            through visible elements.
-            - role: string or lambda e.g. lambda x: x == 13
-            - name: string or lambda.
-            - c_name: string or lambda.
-            - location: string or lambda.
-            - value: string or lambda.
-            - description: string or lambda.
-            - parent: string or lambda.
-            - selection: string or lambda.
-            - role_name: string or lambda.
-
-        Returns:
-            - True if element was matched otherwise False.
+        :param bool only_visible: flag that indicates will we search only
+        through visible elements.
+        :param str role: string or lambda e.g. lambda x: x == 13
+        :param str name: string or lambda.
+        :param str c_name: string or lambda.
+        :param str location: string or lambda.
+        :param str value: string or lambda.
+        :param str description: string or lambda.
+        :param str selection: string or lambda.
+        :param str role_name: string or lambda.
+        :param str parent_count: string or lambda.
+        :param str child_count: string or lambda.
+        :rtype: bool
+        :return: True if element was matched otherwise False.
         """
-
         try:
             if only_visible and not self.is_visible:
                 return False
@@ -375,7 +335,8 @@ class IElement(object):
                     if not expected_result(attr):
                         return False
                 else:
-                    regex = _Utils.convert_wildcard_to_regex(expected_result)
+                    regex = CommonUtils.convert_wildcard_to_regex(
+                        expected_result)
                     if not re.match(regex, attr):
                         return False
         except:

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#    Copyright (c) 2014 Max Beloborodko.
+#    Copyright (c) 2014-2017 Max Beloborodko.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -31,6 +31,9 @@ from ..interfaces.i_soup import ISoup
 from .element import WinElement
 from .mouse import WinMouse
 from .keyboard import WinKeyboard
+
+if WinUtils.is_python_3():
+    basestring = unicode = str
 
 comtypes.client.GetModule('oleacc.dll')
 

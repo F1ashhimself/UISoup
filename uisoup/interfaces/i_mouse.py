@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-#    Copyright (c) 2014 Max Beloborodko.
+#    Copyright (c) 2014-2017 Max Beloborodko.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -43,13 +43,9 @@ class IMouse(object):
         """
         Move the mouse to the specified coordinates.
 
-        Arguments:
-            - x: integer value with x coordinate.
-            - y: integer value with y coordinate.
-            - smooth: bool, indicates is it needed to simulate smooth movement.
-
-        Returns:
-            - None
+        :param int x: x coordinate.
+        :param int y: y coordinate.
+        :param bool smooth: indicates is it needed to simulate smooth movement.
         """
 
     @abstractmethod
@@ -57,15 +53,11 @@ class IMouse(object):
         """
         Drags the mouse to the specified coordinates.
 
-        Arguments:
-            - x1: integer value with x start coordinate.
-            - y1: integer value with y start coordinate.
-            - x1: integer value with x target coordinate.
-            - y1: integer value with y target coordinate.
-            - smooth: bool, indicates is it needed to simulate smooth movement.
-
-        Returns:
-            - None
+        :param int x1: x start coordinate.
+        :param int y1: y start coordinate.
+        :param int x2: x target coordinate.
+        :param int y2: y target coordinate.
+        :param bool smooth: indicates is it needed to simulate smooth movement.
         """
 
     @abstractmethod
@@ -73,14 +65,10 @@ class IMouse(object):
         """
         Presses mouse button as dictated by coordinates and button name.
 
-        Arguments:
-            - x: integer value with x coordinate to press mouse at.
-            - y: integer value with y coordinate to press mouse at.
-            - button_name: string value with mouse button name. Should be one
-            of: 'b1c' - left button or 'b3c' - right button.
-
-        Returns:
-            - None
+        :param int x: x coordinate to press mouse at.
+        :param int y: y coordinate to press mouse at.
+        :param str button_name: mouse button name. Should be one
+        of: 'b1c' - left button or 'b3c' - right button.
         """
 
     @abstractmethod
@@ -88,12 +76,8 @@ class IMouse(object):
         """
         Releases mouse button by button name.
 
-        Arguments:
-            - button_name: string value with mouse button name. Should be one
-            of: 'b1c' - left button or 'b3c' - right button.
-
-        Returns:
-            - None
+        :param str button_name: mouse button name. Should be one
+        of: 'b1c' - left button or 'b3c' - right button.
         """
 
     @abstractmethod
@@ -101,14 +85,10 @@ class IMouse(object):
         """
         Clicks as dictated by coordinates and button name.
 
-        Arguments:
-            - x: integer value with x coordinate to click at.
-            - y: integer value with y coordinate to click at.
-            - button_name: string value with mouse button name. Should be one
-            of: 'b1c' - left button or 'b3c' - right button.
-
-        Returns:
-            - None
+        :param int x: x coordinate to click mouse at.
+        :param int y: y coordinate to click mouse at.
+        :param str button_name: mouse button name. Should be one
+        of: 'b1c' - left button or 'b3c' - right button.
         """
 
     @abstractmethod
@@ -116,14 +96,10 @@ class IMouse(object):
         """
         Double-clicks as dictated by coordinates and button name.
 
-        Arguments:
-            - x: integer value with x coordinate to double-click at.
-            - y: integer value with y coordinate to double-click at.
-            - button_name: string value with mouse button name. Should be one
-            of: 'b1c' - left button or 'b3c' - right button.
-
-        Returns:
-            - None
+        :param int x: x coordinate to double-click at.
+        :param int y: y coordinate to double-click at.
+        :param str button_name: mouse button name. Should be one
+        of: 'b1c' - left button or 'b3c' - right button.
         """
 
     @abstractmethod
@@ -131,10 +107,6 @@ class IMouse(object):
         """
         Returns current mouse cursor position.
 
-        Arguments:
-            - None
-
-        Returns:
-            - tuple of two integers, that holds x and y coordinates of current
-            mouse cursor position.
+        :rtype: tuple[int, int]
+        :return: x and y coordinates of current mouse cursor position.
         """

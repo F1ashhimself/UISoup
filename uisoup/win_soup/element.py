@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-#    Copyright (c) 2014 Max Beloborodko.
+#    Copyright (c) 2014-2017 Max Beloborodko.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -27,6 +27,8 @@ from ..interfaces.i_element import IElement
 from ..utils.win_utils import WinUtils
 from .. import TooSaltyUISoupException
 
+if WinUtils.is_python_3():
+    xrange = range
 
 CO_E_OBJNOTCONNECTED = -2147220995
 
@@ -170,11 +172,9 @@ class WinElement(IElement):
         """
         Constructor.
 
-        Arguments:
-            - obj_handle: instance of i_accessible or window handle.
-            - i_object_id: int, object id.
+        :param obj_handle: instance of i_accessible or window handle.
+        :param int i_object_id: object id.
         """
-
         if isinstance(obj_handle, comtypes.gen.Accessibility.IAccessible):
             i_accessible = obj_handle
         else:
@@ -194,26 +194,20 @@ class WinElement(IElement):
         """
         Checks state.
 
-        Arguments:
-            - state: int, state flag.
+        :param int state: state flag.
 
-        Returns:
-            - Bool flag indicator.
+        :rtype: bool
+        :return: bool flag indicator.
         """
-
         return bool(self._acc_state & state)
 
     def _find_windows_by_same_proc(self):
         """
         Find window by same process id.
 
-        Arguments:
-            - None
-
-        Returns:
-            - list of windows.
+        :rtype: list
+        :return: list of windows.
         """
-
         enum_windows_proc = \
             ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_long,
                                ctypes.c_long)
@@ -235,7 +229,6 @@ class WinElement(IElement):
         """
         Property for window handler.
         """
-
         hwnd = ctypes.c_int()
         ctypes.oledll.oleacc.WindowFromAccessibleObject(self._i_accessible,
                                                         ctypes.byref(hwnd))
@@ -247,7 +240,6 @@ class WinElement(IElement):
         """
         Property for element role.
         """
-
         obj_child_id = comtypes.automation.VARIANT()
         obj_child_id.vt = comtypes.automation.VT_I4
         obj_child_id.value = self._i_object_id
@@ -474,13 +466,10 @@ class WinElement(IElement):
         """
         Find child element in the cache.
 
-        Arguments:
-            - only_visible: bool, flag that indicates will we search only
-
-        Returns:
-            - Yield found element.
+        :param bool only_visible: flag that indicates will we search only
+        :rtype: WinElement
+        :return: yield found element.
         """
-
         for obj_element in self._cached_children:
             if obj_element._match(only_visible, **kwargs):
                 yield obj_element
@@ -489,13 +478,10 @@ class WinElement(IElement):
         """
         Find child element.
 
-        Arguments:
-            - only_visible: bool, flag that indicates will we search only
-
-        Returns:
-            - Yield found element.
+        :param bool only_visible: flag that indicates will we search only
+        :rtype: WinElement
+        :return: yield found element.
         """
-
         lst_queue = list(self)
 
         if self.is_top_level_window:
@@ -515,14 +501,20 @@ class WinElement(IElement):
 
     def find(self, only_visible=True, **kwargs):
         try:
-            return self.__findcacheiter(only_visible,
-                                        **kwargs).next()
+            iter_ = next(self.__findcacheiter(only_visible, **kwargs)) if \
+                WinUtils.is_python_3() else self.__findcacheiter(
+                only_visible, **kwargs).next()
+            return iter_
         except StopIteration:
             try:
-                return self._finditer(only_visible,
-                                      **kwargs).next()
+                iter_ = next(self._finditer(only_visible, **kwargs)) if \
+                    WinUtils.is_python_3() else self.__findcacheiter(
+                    only_visible, **kwargs).next()
+                return iter_
             except StopIteration:
-                attrs = ['%s=%s' % (k, v) for k, v in kwargs.iteritems()]
+                items_ = kwargs.items() if WinUtils.is_python_3() else \
+                    kwargs.iteritems()
+                attrs = ['%s=%s' % (k, v) for k, v in items_]
                 raise TooSaltyUISoupException(
                     'Can\'t find object with attributes "%s".' %
                     '; '.join(attrs))
@@ -545,16 +537,13 @@ class WinElement(IElement):
         """
         Safely gets child count.
 
-        Arguments:
-            - i_accessible: instance of i_accessible.
-
-        Returns:
-            - int, object child count.
+        :param i_accessible: instance of i_accessible.
+        :rtype: int
+        :return: object child count
         """
-
         try:
             return i_accessible.accChildCount
         except Exception as ex:
-            if isinstance(ex, comtypes.COMError) and ex.hresult in \
-                    (CO_E_OBJNOTCONNECTED,):
+            if isinstance(ex, comtypes.COMError) and getattr(ex, 'hresult') \
+                    in (CO_E_OBJNOTCONNECTED,):
                 return 0

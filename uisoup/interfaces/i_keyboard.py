@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-#    Copyright (c) 2014 Max Beloborodko.
+#    Copyright (c) 2014-2017 Max Beloborodko.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
 #    not use this file except in compliance with the License. You may obtain
@@ -22,7 +22,8 @@ from .. import TooSaltyUISoupException
 
 
 class Key(object):
-    """Decorator class to specify modifier key relations.
+    """
+    Decorator class to specify modifier key relations.
     """
 
     def __init__(self, hex_key_code):
@@ -30,14 +31,13 @@ class Key(object):
         self.children = None
 
     def modify(self, *args):
-        """Specifies Keys that will be modified by a current key.
-
-        Arguments:
-            - *args: Keys to be modified by current key.
-        Returns:
-            - New instance of Key with children Keys to be modified.
         """
+        Specifies Keys that will be modified by a current key.
 
+        :param args: Keys to be modified by current key.
+        :rtype: Key
+        :return: New instance of Key with children Keys to be modified.
+        """
         for arg in args:
             if not isinstance(arg, Key):
                 raise TooSaltyUISoupException('Key instance is expected.')
@@ -59,47 +59,39 @@ class IKeyboard(object):
 
     @abstractmethod
     def press_key(self, hex_key_code):
-        """Presses (and releases) key specified by a hex code.
+        """
+        Presses (and releases) key specified by a hex code.
 
-        Arguments:
-            - hex_key_code: integer value holding hexadecimal code for a key to
-            be pressed.
-        Returns:
-            - None
+        :param int hex_key_code: integer value holding hexadecimal code for 
+        a key to be pressed.
         """
 
     @abstractmethod
     def press_key_and_hold(self, hex_key_code):
-        """Presses (and holds) key specified by a hex code.
+        """
+        Presses (and holds) key specified by a hex code.
 
-        Arguments:
-            - hex_key_code: integer value holding hexadecimal code for a key to
-            be pressed.
-        Returns:
-            - None
+        :param int hex_key_code: integer value holding hexadecimal code for 
+        a key to be pressed.
         """
 
     @abstractmethod
     def release_key(self, hex_key_code):
-        """Releases key specified by a hex code.
+        """
+        Releases key specified by a hex code.
 
-        Arguments:
-            - hex_key_code: integer value holding hexadecimal code for a key to
-            be pressed.
-        Returns:
-            - None
+        :param int hex_key_code: integer value holding hexadecimal code for 
+        a key to be released.
         """
 
     @abstractmethod
     def send(self, *args, **kwargs):
-        """Send key events as specified by Keys.
+        """
+        Send key events as specified by Keys.
 
         If Key contains children Keys they will be recursively
         processed with current Key code pressed as a modifier key.
 
-        Arguments:
-            - *args: Keys to be send.
-            - **kwargs: "delay" between keys in seconds.
-        Returns:
-            - None
+        :param args: Keys to send.
+        :param kwargs: "delay" between keys in seconds.
         """
