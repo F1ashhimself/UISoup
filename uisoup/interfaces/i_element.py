@@ -295,9 +295,8 @@ class IElement(object):
         return obj_document.toprettyxml()
 
     def __str__(self):
-        result = '[Role: %s(0x%X) | Name: %r | Child count: %d]' % \
+        result = '[Role: %s | Name: %r | Child count: %d]' % \
                  (self.acc_role_name,
-                  self.acc_role,
                   self.acc_name,
                   self.acc_child_count)
 

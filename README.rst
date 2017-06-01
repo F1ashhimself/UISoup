@@ -55,6 +55,10 @@ Also adds :code:`ui-inspector` script that allows you to inspect UI elements. Ju
 **Changelog:**
 
 
+UISoup 2.5.5 (released 01 Jun 2017)
+
+* Fixes: fix issue #19 that blocks __str__ method of element.
+
 UISoup 2.5.4 (released 14 Apr 2017)
 
 * Additions: added support for Python3.
