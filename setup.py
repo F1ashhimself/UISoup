@@ -21,7 +21,7 @@ def parse_requirements(filename):
 if __name__ == '__main__':
     setup(
         name='UISoup',
-        version='2.5.6',
+        version='2.5.7',
         description='Cross Platform GUI Test Automation tool.',
         long_description=package_env('README.rst'),
         author='Max Beloborodko',
