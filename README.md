@@ -4,9 +4,6 @@ UISoup
 .. image:: https://img.shields.io/pypi/v/UISoup.svg
         :alt: Release Status
         :target: https://pypi.python.org/pypi/UISoup
-.. image:: https://img.shields.io/pypi/dm/UISoup.svg
-        :alt: Downloads
-        :target: https://pypi.python.org/pypi/UISoup
 
 **This library supports UI-related testing using Python on Windows and Mac OS. (Only Python x86 is supported)**
 
@@ -54,6 +51,9 @@ Also adds :code:`ui-inspector` script that allows you to inspect UI elements. Ju
 
 **Changelog:**
 
+UISoup 2.5.6 (released 27 Apr 2018)
+
+* Fixes: fix issue with pip.req in new version of pip.
 
 UISoup 2.5.5 (released 01 Jun 2017)
 

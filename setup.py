@@ -2,7 +2,6 @@
 
 from os import path
 
-from pip.req import parse_requirements
 from setuptools import setup
 
 
@@ -13,19 +12,23 @@ def package_env(file_name, strict=False):
     else:
         return ''
 
+
+def parse_requirements(filename):
+    lineiter = (line.strip() for line in open(filename))
+    return [line for line in lineiter if line and not line.startswith("#")]
+
+
 if __name__ == '__main__':
     setup(
         name='UISoup',
-        version='2.5.5',
+        version='2.5.6',
         description='Cross Platform GUI Test Automation tool.',
         long_description=package_env('README.rst'),
         author='Max Beloborodko',
         author_email='f1ashhimself@gmail.com',
         packages=['uisoup'],
         include_package_data=True,
-        install_requires=[str(ir.req) for ir in
-                          parse_requirements('requirements.txt',
-                                             session=False)],
+        install_requires=parse_requirements('requirements.txt'),
         zip_safe=False,
         entry_points={
             'console_scripts': [
