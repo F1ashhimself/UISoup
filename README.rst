@@ -51,7 +51,7 @@ Also adds :code:`ui-inspector` script that allows you to inspect UI elements. Ju
 
 **Changelog:**
 
-UISoup 2.5.6 (released 27 Apr 2018)
+UISoup 2.5.7 (released 27 Apr 2018)
 
 * Fixes: fix issue with pip.req in new version of pip.
 
