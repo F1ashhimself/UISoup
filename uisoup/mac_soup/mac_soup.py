@@ -88,14 +88,14 @@ class MacSoup(ISoup):
 
         win_list = CG.CGWindowListCopyWindowInfo(filters, CG.kCGNullWindowID)
 
-        window = filter(lambda x:
+        window = tuple(filter(lambda x:
                         re.match(MacUtils.replace_inappropriate_symbols(regex),
                                  MacUtils.replace_inappropriate_symbols(
                                      x.get('kCGWindowName', '')) +
                                  x.get('kCGWindowOwnerName', ''),
                                  re.IGNORECASE)
                         if x.get('kCGWindowName', '') else False,
-                        win_list)
+                        win_list))
 
         window = window[0] if window else window
         if not window:
