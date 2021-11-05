@@ -14,19 +14,28 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+from __future__ import generator_stop
 
 __author__ = 'f1ashhimself@gmail.com'
 
 
 import struct
 from AppKit import NSAppleScript
-from Carbon import AppleEvents
 
 from ..utils.common import CommonUtils
 from .. import TooSaltyUISoupException
 
 if CommonUtils.is_python_3():
     basestring = str
+
+
+class AppleEvents:
+    keyAEKeyForm = b'form'
+    keyAEDesiredClass = b'want'
+    keyAEKeyData = b'seld'
+    keyAEContainer = b'from'
+    kFAIndexParam = b'indx'
+    cWindow = b'cwin'
 
 
 class AppleEventDescriptor(object):
@@ -78,8 +87,6 @@ class AppleEventDescriptor(object):
                 yield AppleEventDescriptor(
                     self._event_descriptor.descriptorAtIndex_(i))
                 i += 1
-
-        raise StopIteration()
 
     @property
     def form_(self):
@@ -165,9 +172,9 @@ class AppleEventDescriptor(object):
             class_id = \
                 self.class_id if self.form_ == AppleEvents.kFAIndexParam else \
                 u'"%s"' % self.class_id.replace('"', '\\"')
-            specifier = u'«class %s» %s' % (self.class_name, class_id)
+            specifier = u'«class %s» %s' % (self.class_name.decode(), class_id)
         else:
-            specifier = u'every «class %s»' % self.class_name
+            specifier = u'every «class %s»' % self.class_name.decode()
 
         if self.from_.class_name:
             # Sometimes applescript returns menu bar as a child of
